@@ -1,0 +1,165 @@
+{
+  "name": "packsight",
+  "displayName": "PackSight – Visual Package Manager",
+  "description": "Visually explore, manage, and audit dependencies in VS Code",
+  "version": "0.1.0",
+  "publisher": "bytronlabs",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marufbillah-dev/packsight.git"
+  },
+  "icon": "resources/icon-marketplace.png",
+  "keywords": [
+    "npm",
+    "yarn",
+    "pnpm",
+    "dependencies",
+    "dependency manager",
+    "package manager",
+    "unused dependencies",
+    "unused packages",
+    "outdated packages",
+    "visualizer",
+    "node modules"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "workspaceContains:package.json"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "packSightContainer",
+          "title": "PackSight",
+          "icon": "resources/codicon.svg"
+        }
+      ]
+    },
+    "views": {
+      "packSightContainer": [
+        {
+          "id": "packSight.dependencies",
+          "name": "PackSight",
+          "contextualTitle": "PackSight"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "packSight.refresh",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.uninstall",
+        "title": "Uninstall Package",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.update",
+        "title": "Update Package",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.copyPackageName",
+        "title": "Copy Package Name",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.switchToDashboard",
+        "title": "⚡ Switch to Dashboard",
+        "icon": "$(layout-panel)",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.switchToTreeView",
+        "title": "🌲 Switch to Tree View",
+        "icon": "$(list-tree)",
+        "category": "PackSight"
+      }
+    ],
+    "configuration": {
+      "title": "PackSight",
+      "properties": {
+        "packSight.updateFlags": {
+          "type": "string",
+          "default": "--legacy-peer-deps",
+          "markdownDescription": "Extra flags appended to `npm install <pkg>@latest` when updating a package from the dashboard. Use `--legacy-peer-deps` (default) to bypass peer-dependency conflicts, or leave empty for strict resolution.",
+          "scope": "resource"
+        },
+        "packSight.uninstallFlags": {
+          "type": "string",
+          "default": "--legacy-peer-deps",
+          "markdownDescription": "Extra flags appended to `npm uninstall` when removing a package from the dashboard. Use `--legacy-peer-deps` (default) to bypass peer-dependency conflicts, or leave empty for strict resolution.",
+          "scope": "resource"
+        }
+      }
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "packSight.refresh",
+          "when": "view == packSight.dependencies",
+          "group": "navigation"
+        },
+        {
+          "command": "packSight.switchToDashboard",
+          "when": "view == packSight.dependencies && !packSight.dashboardOpen",
+          "group": "navigation"
+        },
+        {
+          "command": "packSight.switchToTreeView",
+          "when": "view == packSight.dependencies && packSight.dashboardOpen",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "packSight.uninstall",
+          "when": "view == packSight.dependencies && viewItem == package",
+          "group": "packSight@1"
+        },
+        {
+          "command": "packSight.update",
+          "when": "view == packSight.dependencies && viewItem == package",
+          "group": "packSight@2"
+        },
+        {
+          "command": "packSight.copyPackageName",
+          "when": "view == packSight.dependencies && viewItem == package",
+          "group": "packSight@3"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.130",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^8.58.1",
+    "@typescript-eslint/parser": "^8.58.1",
+    "eslint": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "@typescript-eslint/type-utils": "^8.58.1",
+    "@typescript-eslint/typescript-estree": "^8.58.1",
+    "@typescript-eslint/utils": "^8.58.1"
+  }
+}

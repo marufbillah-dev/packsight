@@ -1,0 +1,17 @@
+# Ignore compiled output
+out/
+
+# Ignore dependencies
+node_modules/
+
+# Ignore build artifacts
+*.vsix
+
+# Ignore TypeScript and ESLint configuration files
+.eslintrc.json
+
+# Ignore VS Code configuration files
+.vscode/
+.vscodeignore
+launch.json
+tasks.json
