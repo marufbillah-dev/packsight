@@ -240,50 +240,75 @@ export async function getPackageSizes(
 }
 
 /**
- * Fetches the release history for a package from the npm registry.
- * Returns up to `limit` most-recent versions with their publish dates,
- * sorted newest-first.
+ * Fetches the GitHub releases URL for each package by reading the
+ * `repository.url` field from the npm registry.
  *
- * Uses `npm view <pkg> time --json` which returns a map of
- * { version: isoDate, ... } plus "created" and "modified" meta-keys.
+ * Normalises git+https / git+ssh / http URLs to a plain
+ * https://github.com/<owner>/<repo>/releases URL.
+ * Returns null for packages with no repository or non-GitHub hosts.
  */
-export async function getPackageChangelog(
-  name: string,
-  limit = 20
-): Promise<Array<{ version: string; date: string }>> {
+export async function getPackageRepoUrls(
+  packages: Array<{ name: string }>
+): Promise<Map<string, string>> {
+  const result = new Map<string, string>();
+  const concurrency = 8;
+  let idx = 0;
+
+  async function worker(): Promise<void> {
+    while (idx < packages.length) {
+      const pkg = packages[idx++];
+      const url = await fetchRepoUrl(pkg.name);
+      if (url !== null) {
+        result.set(pkg.name, url);
+      }
+    }
+  }
+
+  const workers = Array.from({ length: Math.min(concurrency, packages.length) }, worker);
+  await Promise.all(workers);
+  return result;
+}
+
+function fetchRepoUrl(name: string): Promise<string | null> {
   return new Promise((resolve) => {
     cp.exec(
-      `npm view ${name} time --json`,
-      { timeout: 15000 },
+      `npm view ${name} repository.url --json`,
+      { timeout: 10000 },
       (error, stdout) => {
-        if (error || !stdout.trim()) { resolve([]); return; }
+        if (error || !stdout.trim()) { resolve(null); return; }
         try {
-          const raw = JSON.parse(stdout.trim()) as Record<string, string>;
-          const entries = Object.entries(raw)
-            .filter(([key]) => key !== 'created' && key !== 'modified')
-            .map(([version, date]) => {
-              const ts = new Date(date).getTime();
-              return { version, date, ts: isNaN(ts) ? 0 : ts };
-            })
-            .sort((a, b) => {
-              // Primary: descending by publish timestamp
-              if (b.ts !== a.ts) return b.ts - a.ts;
-              // Secondary: descending by semver (handles same-millisecond or NaN dates)
-              const [aMaj, aMin, aPat] = parseSemver(a.version);
-              const [bMaj, bMin, bPat] = parseSemver(b.version);
-              if (bMaj !== aMaj) return bMaj - aMaj;
-              if (bMin !== aMin) return bMin - aMin;
-              return bPat - aPat;
-            })
-            .map(({ version, date }) => ({ version, date }))
-            .slice(0, limit);
-          resolve(entries);
+          const raw = JSON.parse(stdout.trim());
+          if (typeof raw !== 'string') { resolve(null); return; }
+          resolve(normaliseToReleasesUrl(raw));
         } catch {
-          resolve([]);
+          resolve(null);
         }
       }
     );
   });
+}
+
+/**
+ * Converts any git/http repository URL to a https://github.com/.../releases URL.
+ * Returns null if the URL is not a GitHub URL.
+ */
+function normaliseToReleasesUrl(raw: string): string | null {
+  // Strip common prefixes: git+https://, git+ssh://git@, git://
+  const cleaned = raw
+    .replace(/^git\+/, '')
+    .replace(/^git:\/\//, 'https://')
+    .replace(/^ssh:\/\/git@/, 'https://')
+    .replace(/^git@github\.com:/, 'https://github.com/')
+    .replace(/\.git$/, '');
+
+  try {
+    const url = new URL(cleaned);
+    if (url.hostname !== 'github.com') { return null; }
+    // pathname is /<owner>/<repo>
+    return `https://github.com${url.pathname}/releases`;
+  } catch {
+    return null;
+  }
 }
 
 interface ExecError {

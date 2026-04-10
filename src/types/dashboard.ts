@@ -7,6 +7,7 @@ export interface DashboardPackage {
   isDev: boolean;
   lastUpdated: string | null;  // ISO date string of the installed version's publish time
   size: number | null;         // unpacked size in bytes
+  repoUrl: string | null;      // GitHub releases URL, null if unavailable
 }
 
 /** Full payload sent to the webview on every data load/refresh */
@@ -14,14 +15,6 @@ export interface DashboardData {
   packages: DashboardPackage[];
   /** Absolute path shown in the header for context */
   workspaceRoot: string;
-}
-
-// ─── Changelog ───────────────────────────────────────────────────────────────
-
-/** A single version entry in a package changelog */
-export interface ChangelogEntry {
-  version: string;
-  date: string; // ISO date string
 }
 
 // ─── Messages: Webview → Extension ───────────────────────────────────────────
@@ -32,7 +25,7 @@ export type WebviewMessage =
   | { command: 'update'; packageName: string }
   | { command: 'bulkUpdate'; packageNames: string[] }
   | { command: 'refresh' }
-  | { command: 'fetchChangelog'; packageName: string };
+  | { command: 'openChangelog'; url: string };
 
 // ─── Messages: Extension → Webview ───────────────────────────────────────────
 
@@ -40,6 +33,4 @@ export type ExtensionMessage =
   | { command: 'loadData'; payload: DashboardData }
   | { command: 'operationStart'; packageName: string }
   | { command: 'operationSuccess'; message: string }
-  | { command: 'operationError'; message: string }
-  | { command: 'changelogData'; packageName: string; entries: ChangelogEntry[] }
-  | { command: 'changelogError'; packageName: string; message: string };
+  | { command: 'operationError'; message: string };
