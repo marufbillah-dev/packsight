@@ -7,11 +7,6 @@ export interface OutdatedEntry {
   latest: string;
 }
 
-/** Raw shape returned by `npm outdated --json` */
-type RawOutdatedJson = Record<
-  string,
-  { current: string; wanted: string; latest: string }
->;
 
 /**
  * Runs an npm command in the VS Code integrated terminal and resolves
@@ -49,59 +44,81 @@ export function runInTerminal(
 }
 
 /**
- * Runs `npm outdated --json` synchronously and returns a map of
- * package name → { current, wanted, latest }.
+ * Fetches the true latest version for each package from the npm registry
+ * and compares it against the installed version, ignoring semver ranges.
  *
- * npm outdated exits with code 1 when outdated packages exist, so we
- * must not throw on non-zero exit — we parse stdout regardless.
+ * Unlike `npm outdated`, this detects updates even when the installed version
+ * satisfies the package.json range (e.g. installed 6.0.0, latest 6.0.1,
+ * range ^6.0.0 — npm outdated would miss this).
  *
- * @param workspaceRoot - Absolute path to the workspace root
+ * @param packages - Array of { name, version } from package.json
  */
-export function getOutdatedPackages(
-  workspaceRoot: string
-): Map<string, OutdatedEntry> {
-  let stdout = '';
+export async function getOutdatedPackages(
+  packages: Array<{ name: string; version: string }>
+): Promise<Map<string, OutdatedEntry>> {
+  const result = new Map<string, OutdatedEntry>();
+  const concurrency = 8;
+  let idx = 0;
 
-  try {
-    stdout = cp.execSync('npm outdated --json', {
-      cwd: workspaceRoot,
-      encoding: 'utf-8',
-      // npm outdated exits 1 when packages are outdated — suppress throw
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
-  } catch (err: unknown) {
-    // execSync throws when exit code !== 0; stdout is still on the error object
-    if (isExecError(err) && err.stdout) {
-      stdout = err.stdout;
-    } else {
-      return new Map();
+  async function worker(): Promise<void> {
+    while (idx < packages.length) {
+      const pkg = packages[idx++];
+      const installed = pkg.version.replace(/^[\^~>=<\s]+/, '');
+      try {
+        const latest = await getRegistryLatest(pkg.name);
+        if (latest && latest !== installed && isNewer(latest, installed)) {
+          result.set(pkg.name, { current: installed, wanted: latest, latest });
+        }
+      } catch {
+        // skip on network error
+      }
     }
   }
 
-  if (!stdout.trim()) {
-    return new Map();
-  }
-
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(stdout);
-  } catch {
-    return new Map();
-  }
-
-  if (!isRawOutdatedJson(parsed)) {
-    return new Map();
-  }
-
-  const result = new Map<string, OutdatedEntry>();
-  for (const [name, info] of Object.entries(parsed)) {
-    result.set(name, {
-      current: info.current,
-      wanted: info.wanted,
-      latest: info.latest,
-    });
-  }
+  const workers = Array.from(
+    { length: Math.min(concurrency, packages.length) },
+    worker
+  );
+  await Promise.all(workers);
   return result;
+}
+
+/**
+ * Fetches the dist-tags.latest version for a package from the npm registry.
+ */
+function getRegistryLatest(name: string): Promise<string | null> {
+  return new Promise((resolve) => {
+    cp.exec(
+      `npm view ${name} version --json`,
+      { timeout: 10000 },
+      (error, stdout) => {
+        if (error || !stdout.trim()) { resolve(null); return; }
+        try {
+          const v = JSON.parse(stdout.trim());
+          resolve(typeof v === 'string' ? v : null);
+        } catch {
+          resolve(null);
+        }
+      }
+    );
+  });
+}
+
+/**
+ * Returns true if `a` is strictly newer than `b` using semver comparison.
+ * Handles major.minor.patch only — pre-release tags are ignored.
+ */
+function isNewer(a: string, b: string): boolean {
+  const pa = parseSemver(a);
+  const pb = parseSemver(b);
+  if (pa[0] !== pb[0]) return pa[0] > pb[0];
+  if (pa[1] !== pb[1]) return pa[1] > pb[1];
+  return pa[2] > pb[2];
+}
+
+function parseSemver(v: string): [number, number, number] {
+  const m = v.replace(/^[\^~>=<\s]+/, '').match(/^(\d+)\.(\d+)\.(\d+)/);
+  return m ? [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])] : [0, 0, 0];
 }
 
 /**
@@ -196,8 +213,4 @@ function isExecError(value: unknown): value is ExecError {
     'stdout' in value &&
     typeof (value as ExecError).stdout === 'string'
   );
-}
-
-function isRawOutdatedJson(value: unknown): value is RawOutdatedJson {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }

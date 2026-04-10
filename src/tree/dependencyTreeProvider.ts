@@ -111,18 +111,24 @@ export class DependencyTreeProvider
     this._onDidChangeTreeData.fire(); // triggers spinner
 
     setImmediate(() => {
-      try {
-        this.usedPackages = scanUsedPackages(this.workspaceRoot);
-        this.outdatedMap = getOutdatedPackages(this.workspaceRoot);
-      } catch {
-        this.usedPackages = new Set();
-        this.outdatedMap = new Map();
-      } finally {
-        this.scanning = false;
-        this._onDidChangeTreeData.fire();
-        // Notify other subscribers (e.g. dashboard) that data has changed
-        dependencyChanged.fire();
-      }
+      void (async () => {
+        try {
+          const { dependencies, devDependencies } = parseDependencies(this.workspaceRoot);
+          const allEntries = [
+            ...dependencies.map(p => ({ name: p.name, version: p.version })),
+            ...devDependencies.map(p => ({ name: p.name, version: p.version })),
+          ];
+          this.usedPackages = scanUsedPackages(this.workspaceRoot);
+          this.outdatedMap  = await getOutdatedPackages(allEntries);
+        } catch {
+          this.usedPackages = new Set();
+          this.outdatedMap  = new Map();
+        } finally {
+          this.scanning = false;
+          this._onDidChangeTreeData.fire();
+          dependencyChanged.fire();
+        }
+      })();
     });
   }
 

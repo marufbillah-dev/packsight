@@ -135,15 +135,17 @@ export class DashboardPanel {
         this.workspaceRoot,
       );
       const usedPackages = scanUsedPackages(this.workspaceRoot);
-      const outdatedMap = getOutdatedPackages(this.workspaceRoot);
 
       const allEntries = [
         ...dependencies.map((p) => ({ ...p, isDev: false })),
         ...devDependencies.map((p) => ({ ...p, isDev: true })),
       ];
 
-      // Fetch last-updated dates from the npm registry in parallel
-      const lastUpdatedMap = await getPackagesLastUpdated(allEntries);
+      // Fetch outdated and last-updated in parallel
+      const [outdatedMap, lastUpdatedMap] = await Promise.all([
+        getOutdatedPackages(allEntries),
+        getPackagesLastUpdated(allEntries),
+      ]);
 
       data = {
         workspaceRoot: this.workspaceRoot,
