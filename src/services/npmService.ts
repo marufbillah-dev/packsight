@@ -261,8 +261,21 @@ export async function getPackageChangelog(
           const raw = JSON.parse(stdout.trim()) as Record<string, string>;
           const entries = Object.entries(raw)
             .filter(([key]) => key !== 'created' && key !== 'modified')
-            .map(([version, date]) => ({ version, date }))
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .map(([version, date]) => {
+              const ts = new Date(date).getTime();
+              return { version, date, ts: isNaN(ts) ? 0 : ts };
+            })
+            .sort((a, b) => {
+              // Primary: descending by publish timestamp
+              if (b.ts !== a.ts) return b.ts - a.ts;
+              // Secondary: descending by semver (handles same-millisecond or NaN dates)
+              const [aMaj, aMin, aPat] = parseSemver(a.version);
+              const [bMaj, bMin, bPat] = parseSemver(b.version);
+              if (bMaj !== aMaj) return bMaj - aMaj;
+              if (bMin !== aMin) return bMin - aMin;
+              return bPat - aPat;
+            })
+            .map(({ version, date }) => ({ version, date }))
             .slice(0, limit);
           resolve(entries);
         } catch {
