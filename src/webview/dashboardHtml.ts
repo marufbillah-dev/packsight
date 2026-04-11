@@ -626,6 +626,45 @@ export function getDashboardHtml(
     .ver-bump-major { color: var(--accent-red);    background: color-mix(in srgb, var(--accent-red)    12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-red)    28%, transparent); }
     .ver-bump-minor { color: var(--accent-blue);   background: color-mix(in srgb, var(--accent-blue)   12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-blue)   28%, transparent); }
     .ver-bump-patch { color: var(--accent-green);  background: color-mix(in srgb, var(--accent-green)  12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-green)  28%, transparent); }
+    /* Bulk update package list */
+    #confirm-bulk-list {
+      display: none;
+      flex-direction: column;
+      gap: 0;
+      margin: 14px 0 20px;
+      border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 60%, transparent);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    #confirm-bulk-list.visible { display: flex; }
+    .bulk-list-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 12px;
+      border-bottom: 1px solid color-mix(in srgb, var(--vscode-panel-border) 40%, transparent);
+      font-size: 0.83em;
+    }
+    .bulk-list-row:last-child { border-bottom: none; }
+    .bulk-list-row:nth-child(odd) {
+      background: color-mix(in srgb, var(--vscode-foreground) 3%, transparent);
+    }
+    .bulk-list-name {
+      font-weight: 600;
+      flex: 1;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .bulk-list-versions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
     .confirm-actions {
       display: flex;
       gap: 8px;
@@ -972,6 +1011,7 @@ export function getDashboardHtml(
         <span class="ver-chip ver-chip-to" id="ver-to"></span>
         <span class="ver-bump-tag" id="ver-bump"></span>
       </div>
+      <div id="confirm-bulk-list" aria-hidden="true"></div>
       <div class="confirm-actions">
         <button class="btn-secondary" id="confirm-cancel">Cancel</button>
         <button id="confirm-ok"></button>
@@ -1360,16 +1400,26 @@ export function getDashboardHtml(
     document.getElementById('btn-bulk-update').addEventListener('click', () => {
       const names = [...selectedPackages];
       if (names.length === 0) return;
+      const bulkItems = names.map(n => {
+        const pkg = allPackages.find(p => p.name === n);
+        return {
+          name: n,
+          from: '^' + (pkg ? pkg.version.replace(/^[\^~>=<\s]+/, '') : '?'),
+          to:   pkg ? pkg.latest ?? '?' : '?',
+        };
+      });
       showConfirm(
         'Update Selected Packages',
-        'Update ' + names.length + ' package(s) to their latest versions?',
+        names.length + ' package(s) will be updated to their latest versions.',
         'Update All',
         'btn-primary',
         () => {
           selectedPackages.clear();
           updateBulkBar();
           vscode.postMessage({ command: 'bulkUpdate', packageNames: names });
-        }
+        },
+        null,
+        bulkItems
       );
     });
 
@@ -1397,7 +1447,7 @@ export function getDashboardHtml(
     // ── Confirm modal ──────────────────────────────────────────────────────
     let pendingAction = null;
 
-    function showConfirm(title, body, okLabel, okClass, onConfirm, versionInfo) {
+    function showConfirm(title, body, okLabel, okClass, onConfirm, versionInfo, bulkItems) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-body').textContent  = body;
       const okBtn = document.getElementById('confirm-ok');
@@ -1405,7 +1455,7 @@ export function getDashboardHtml(
       okBtn.className    = okClass;
       pendingAction      = onConfirm;
 
-      // Version upgrade arrow
+      // Single-package version upgrade arrow
       const arrow = document.getElementById('confirm-version-arrow');
       if (versionInfo) {
         document.getElementById('ver-from').textContent = versionInfo.from;
@@ -1419,6 +1469,28 @@ export function getDashboardHtml(
         arrow.classList.remove('visible');
       }
 
+      // Bulk package list
+      const bulkList = document.getElementById('confirm-bulk-list');
+      if (bulkItems && bulkItems.length > 0) {
+        bulkList.innerHTML = bulkItems.map(item => {
+          const bump = bumpType(item.from, item.to);
+          const bumpCls = bump ? ' ver-bump-' + bump : '';
+          const bumpLabel = bump ? bump.charAt(0).toUpperCase() + bump.slice(1) : '';
+          return '<div class="bulk-list-row">' +
+            '<span class="bulk-list-name">' + esc(item.name) + '</span>' +
+            '<div class="bulk-list-versions">' +
+              '<span class="ver-chip ver-chip-from">' + esc(item.from) + '</span>' +
+              '<span class="ver-arrow">→</span>' +
+              '<span class="ver-chip ver-chip-to">^' + esc(item.to) + '</span>' +
+              (bumpLabel ? '<span class="ver-bump-tag' + bumpCls + '">' + bumpLabel + '</span>' : '') +
+            '</div>' +
+          '</div>';
+        }).join('');
+        bulkList.classList.add('visible');
+      } else {
+        bulkList.classList.remove('visible');
+      }
+
       document.getElementById('confirm-backdrop').classList.add('visible');
       okBtn.focus();
     }
@@ -1426,6 +1498,7 @@ export function getDashboardHtml(
     function closeConfirm() {
       document.getElementById('confirm-backdrop').classList.remove('visible');
       document.getElementById('confirm-version-arrow').classList.remove('visible');
+      document.getElementById('confirm-bulk-list').classList.remove('visible');
       pendingAction = null;
     }
 
