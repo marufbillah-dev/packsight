@@ -100,11 +100,5 @@ export async function handleWebviewMessage(
       await vscode.env.openExternal(vscode.Uri.parse(url));
       break;
     }
-
-    case 'openNpm': {
-      const { packageName } = message;
-      await vscode.env.openExternal(vscode.Uri.parse(`https://www.npmjs.com/package/${packageName}`));
-      break;
-    }
   }
 }

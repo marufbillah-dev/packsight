@@ -435,11 +435,11 @@ export function getDashboardHtml(
     }
     .pkg-name-link {
       cursor: pointer;
-      border-bottom: 1px dashed color-mix(in srgb, var(--vscode-foreground) 30%, transparent);
-      transition: color var(--transition-fast), border-bottom-color var(--transition-fast);
+      color: var(--accent-blue);
+      border-bottom: 1px solid color-mix(in srgb, var(--accent-blue) 35%, transparent);
+      transition: border-bottom-color var(--transition-fast);
     }
     .pkg-name-link:hover {
-      color: var(--accent-blue);
       border-bottom-color: var(--accent-blue);
     }
     td.col-version,
@@ -1132,7 +1132,7 @@ export function getDashboardHtml(
           <td class="col-name"><span class="pkg-name-link" data-name="\${esc(pkg.name)}">\${esc(pkg.name)}</span>\${devTag}</td>
           <td class="col-version">\${esc(pkg.version)}</td>
           <td class="col-latest">\${latestCell}</td>
-          <td class="col-date" data-iso="\${pkg.lastUpdated ? esc(pkg.lastUpdated) : ''}">\${formatDate(pkg.lastUpdated)}</td>
+          <td class="col-date" data-iso="\${pkg.lastUpdated ? esc(pkg.lastUpdated) : ''}"><span class="date-text">\${formatDate(pkg.lastUpdated)}</span></td>
           <td class="col-size">\${formatSize(pkg.size)}</td>
           <td>\${statusBadge(pkg)}</td>
           <td class="actions-cell">
@@ -1370,16 +1370,18 @@ export function getDashboardHtml(
 
     // ── Last Update cell tooltip ───────────────────────────────────────────
     document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
-      const td = e.target.closest('td.col-date');
+      const span = e.target.closest('.date-text');
+      if (!span) return;
+      const td = span.closest('td.col-date');
       if (!td || !td.dataset.iso) return;
       const d = new Date(td.dataset.iso);
       if (isNaN(d.getTime())) return;
       const label = d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
-      showTooltip(label, td.getBoundingClientRect(), false);
+      showTooltip(label, span.getBoundingClientRect(), false);
     }, true);
 
     document.getElementById('pkg-tbody').addEventListener('mouseleave', e => {
-      if (e.target.closest('td.col-date')) hideTooltip();
+      if (e.target.closest('.date-text')) hideTooltip();
     }, true);
 
     // ── Package name → npmjs ───────────────────────────────────────────────
@@ -1397,7 +1399,8 @@ export function getDashboardHtml(
       const span = e.target.closest('.pkg-name-link');
       if (!span) return;
       hideTooltip();
-      vscode.postMessage({ command: 'openNpm', packageName: span.dataset.name });
+      // Open directly in the webview — no extension round-trip, no permission prompt
+      window.open('https://www.npmjs.com/package/' + encodeURIComponent(span.dataset.name), '_blank');
     });
 
     // ── Changelog button delegation ────────────────────────────────────────

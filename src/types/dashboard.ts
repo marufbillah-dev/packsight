@@ -25,8 +25,7 @@ export type WebviewMessage =
   | { command: 'update'; packageName: string }
   | { command: 'bulkUpdate'; packageNames: string[] }
   | { command: 'refresh' }
-  | { command: 'openChangelog'; url: string }
-  | { command: 'openNpm'; packageName: string };
+  | { command: 'openChangelog'; url: string };
 
 // ─── Messages: Extension → Webview ───────────────────────────────────────────
 
