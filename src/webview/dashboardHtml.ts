@@ -1212,7 +1212,7 @@ export function getDashboardHtml(
       }
 
       tbody.innerHTML = pkgs.map(pkg => {        const latestCell = pkg.latest
-          ? '<span style="color:var(--vscode-charts-green,#4caf50)">' + esc(pkg.latest) + '</span>'
+          ? '<span style="color:var(--vscode-charts-green,#4caf50)">^' + esc(pkg.latest) + '</span>'
           : '<span class="latest-dash">—</span>';
 
         const devTag = pkg.isDev ? '<span class="dev-tag">dev</span>' : '';
@@ -1220,7 +1220,7 @@ export function getDashboardHtml(
         const updateBtn = pkg.latest !== null
           ? \`<button class="btn-primary btn-update"
                data-name="\${esc(pkg.name)}"
-               data-version="\${esc(pkg.version.replace(/^[\\^~>=<\\s]+/, ''))}"
+               data-version="^\${esc(pkg.version.replace(/^[\\^~>=<\\s]+/, ''))}"
                data-latest="\${esc(pkg.latest ?? '')}"
                title="Update \${esc(pkg.name)} to \${esc(pkg.latest ?? '')}">Update</button>\`
           : '';
@@ -1230,7 +1230,7 @@ export function getDashboardHtml(
             ? \`<input type="checkbox" class="row-check" data-name="\${esc(pkg.name)}" \${selectedPackages.has(pkg.name) ? 'checked' : ''} title="Select for bulk update" />\`
             : ''}</td>
           <td class="col-name"><span class="pkg-name-link" data-name="\${esc(pkg.name)}">\${esc(pkg.name)}</span>\${devTag}</td>
-          <td class="col-version">\${esc(pkg.version)}</td>
+          <td class="col-version">^\${esc(pkg.version.replace(/^[\\^~>=<\\s]+/, ''))}</td>
           <td class="col-latest">\${latestCell}</td>
           <td class="col-date" data-iso="\${pkg.lastUpdated ? esc(pkg.lastUpdated) : ''}"><span class="date-text">\${formatDate(pkg.lastUpdated)}</span></td>
           <td class="col-size">\${formatSize(pkg.size)}</td>
@@ -1409,7 +1409,7 @@ export function getDashboardHtml(
       const arrow = document.getElementById('confirm-version-arrow');
       if (versionInfo) {
         document.getElementById('ver-from').textContent = versionInfo.from;
-        document.getElementById('ver-to').textContent   = versionInfo.to;
+        document.getElementById('ver-to').textContent   = '^' + versionInfo.to;
         const bump = bumpType(versionInfo.from, versionInfo.to);
         const bumpEl = document.getElementById('ver-bump');
         bumpEl.textContent = bump ? bump.charAt(0).toUpperCase() + bump.slice(1) : '';
