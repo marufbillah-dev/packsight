@@ -66,9 +66,9 @@ export function getDashboardHtml(
       font-size: var(--vscode-font-size);
       color: var(--vscode-foreground);
       background: var(--vscode-editor-background);
-      padding: 24px 28px 40px;
+      padding: 28px 32px 48px;
       min-height: 100vh;
-      line-height: 1.5;
+      line-height: 1.6;
     }
 
     /* ── Page-load stagger animation ─────────────────────────────────────── */
@@ -94,13 +94,13 @@ export function getDashboardHtml(
     }
     .header-title h1 {
       font-family: 'Syne', var(--vscode-font-family), sans-serif;
-      font-size: 1.35em;
+      font-size: 1.5em;
       font-weight: 700;
       color: var(--vscode-foreground);
       line-height: 1.2;
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       letter-spacing: -0.01em;
     }
     .header-title h1 img {
@@ -114,14 +114,14 @@ export function getDashboardHtml(
     }
     #project-name {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
-      font-size: 0.75em;
+      font-size: 0.82em;
       font-weight: 600;
       letter-spacing: 0.1em;
       color: var(--vscode-descriptionForeground);
       background: color-mix(in srgb, var(--vscode-foreground) 6%, transparent);
       border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 80%, transparent);
       border-radius: var(--radius-sm);
-      padding: 4px 10px;
+      padding: 5px 12px;
     }
     .header-actions { display: flex; gap: 8px; align-items: center; }
 
@@ -130,14 +130,14 @@ export function getDashboardHtml(
       cursor: pointer;
       border: none;
       border-radius: var(--radius-sm);
-      padding: 6px 14px;
-      font-size: 0.82em;
+      padding: 7px 16px;
+      font-size: 0.88em;
       font-family: var(--vscode-font-family);
       font-weight: 500;
       transition: all var(--transition-fast);
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       letter-spacing: 0.01em;
     }
     .btn-primary {
@@ -185,8 +185,8 @@ export function getDashboardHtml(
     /* ── Inline SVG icons ────────────────────────────────────────────────── */
     .icon {
       display: inline-block;
-      width: 1em;
-      height: 1em;
+      width: 1.1em;
+      height: 1.1em;
       vertical-align: -0.15em;
       flex-shrink: 0;
     }
@@ -195,8 +195,8 @@ export function getDashboardHtml(
     .stats-bar {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-      margin-bottom: 24px;
+      gap: 16px;
+      margin-bottom: 28px;
     }
     @media (max-width: 560px) {
       .stats-bar { grid-template-columns: repeat(2, 1fr); }
@@ -206,7 +206,7 @@ export function getDashboardHtml(
       background: var(--vscode-editorWidget-background);
       border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 70%, transparent);
       border-radius: var(--radius-lg);
-      padding: 18px 20px 16px;
+      padding: 22px 24px 20px;
       position: relative;
       overflow: hidden;
       transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -246,19 +246,19 @@ export function getDashboardHtml(
     .stat-card.card-outdated::after { background: var(--accent-green); }
 
     .stat-label {
-      font-size: 0.70em;
+      font-size: 0.76em;
       color: var(--vscode-descriptionForeground);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       text-transform: uppercase;
       letter-spacing: 0.08em;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
     }
     .stat-value {
       font-family: 'Syne', var(--vscode-font-family), sans-serif;
-      font-size: 2.2em;
+      font-size: 2.6em;
       font-weight: 800;
       color: var(--vscode-foreground);
       line-height: 1;
@@ -293,8 +293,8 @@ export function getDashboardHtml(
       opacity: 0.7;
     }
     #search-input {
-      padding: 7px 12px 7px 30px;
-      width: 230px;
+      padding: 8px 14px 8px 34px;
+      width: 260px;
       background: color-mix(in srgb, var(--vscode-input-background) 100%, transparent);
       color: var(--vscode-input-foreground);
       border: 1px solid color-mix(in srgb, var(--vscode-input-border, var(--vscode-panel-border)) 80%, transparent);
@@ -320,11 +320,11 @@ export function getDashboardHtml(
     .runtime-badge {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 4px 10px;
+      gap: 6px;
+      padding: 5px 12px;
       border-radius: var(--radius-sm);
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
-      font-size: 0.76em;
+      font-size: 0.82em;
       font-weight: 600;
       letter-spacing: 0.02em;
       border: 1px solid transparent;
@@ -353,17 +353,17 @@ export function getDashboardHtml(
       flex: 0 0 auto;
     }
     .tab {
-      padding: 5px 14px;
+      padding: 6px 16px;
       cursor: pointer;
       border: none;
       background: transparent;
       color: var(--vscode-descriptionForeground);
       border-radius: var(--radius-sm);
-      font-size: 0.83em;
+      font-size: 0.88em;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 6px;
       font-weight: 500;
       transition: all var(--transition-fast);
     }
@@ -385,11 +385,11 @@ export function getDashboardHtml(
       background: color-mix(in srgb, var(--accent-blue) 20%, transparent);
       color: var(--accent-blue);
       border-radius: 20px;
-      padding: 0 6px;
-      font-size: 0.78em;
+      padding: 0 7px;
+      font-size: 0.82em;
       font-weight: 700;
-      min-width: 20px;
-      height: 16px;
+      min-width: 22px;
+      height: 18px;
       line-height: 1;
     }
     .tab-count.hidden { display: none; }
@@ -404,7 +404,7 @@ export function getDashboardHtml(
     /* ── Table ───────────────────────────────────────────────────────────── */
     .table-wrap {
       overflow-x: auto;
-      margin-top: 12px;
+      margin-top: 14px;
       border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 70%, transparent);
       border-radius: var(--radius-lg);
       box-shadow: 0 1px 6px rgba(0,0,0,0.08);
@@ -412,17 +412,17 @@ export function getDashboardHtml(
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.91em;
+      font-size: 0.97em;
     }
     thead th {
       text-align: left;
-      padding: 10px 16px;
+      padding: 12px 18px;
       color: var(--vscode-descriptionForeground);
       background: color-mix(in srgb, var(--vscode-editorWidget-background) 100%, transparent);
       border-bottom: 1px solid color-mix(in srgb, var(--vscode-panel-border) 70%, transparent);
       font-weight: 600;
       white-space: nowrap;
-      font-size: 0.78em;
+      font-size: 0.82em;
       text-transform: uppercase;
       letter-spacing: 0.07em;
       user-select: none;
@@ -458,12 +458,12 @@ export function getDashboardHtml(
     tbody tr:last-child { border-bottom: none; }
     tbody tr:hover { background: color-mix(in srgb, var(--vscode-list-hoverBackground) 100%, transparent); }
     tbody td {
-      padding: 10px 16px;
+      padding: 12px 18px;
       vertical-align: middle;
     }
     td.col-name {
       font-weight: 600;
-      font-size: 0.93em;
+      font-size: 0.97em;
     }
     .pkg-name-link {
       cursor: pointer;
@@ -477,7 +477,7 @@ export function getDashboardHtml(
     td.col-version,
     td.col-latest {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
-      font-size: 0.84em;
+      font-size: 0.90em;
       letter-spacing: -0.01em;
     }
     td.col-latest span[style] {
@@ -487,12 +487,12 @@ export function getDashboardHtml(
     }
     .dev-tag {
       display: inline-block;
-      font-size: 0.65em;
+      font-size: 0.70em;
       color: var(--accent-purple);
       background: color-mix(in srgb, var(--accent-purple) 12%, transparent);
       border: 1px solid color-mix(in srgb, var(--accent-purple) 28%, transparent);
       border-radius: 4px;
-      padding: 1px 6px;
+      padding: 2px 7px;
       margin-left: 6px;
       vertical-align: middle;
       font-weight: 600;
@@ -502,24 +502,24 @@ export function getDashboardHtml(
     .latest-dash { color: var(--vscode-descriptionForeground); opacity: 0.4; }
     td.col-date {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
-      font-size: 0.82em;
+      font-size: 0.88em;
       color: var(--vscode-descriptionForeground);
       white-space: nowrap;
     }
     td.col-size {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
-      font-size: 0.82em;
+      font-size: 0.88em;
       color: var(--vscode-descriptionForeground);
       white-space: nowrap;
     }
 
     .actions-cell { display: flex; gap: 6px; flex-wrap: nowrap; }
-    .actions-cell button { padding: 4px 11px; font-size: 0.79em; white-space: nowrap; }
+    .actions-cell button { padding: 5px 13px; font-size: 0.84em; white-space: nowrap; }
 
     /* ── Checkbox column ─────────────────────────────────────────────────── */
-    .col-check { width: 36px; padding-left: 14px !important; }
+    .col-check { width: 36px; padding-left: 16px !important; }
     .col-check input[type="checkbox"] {
-      width: 15px; height: 15px;
+      width: 16px; height: 16px;
       cursor: pointer;
       accent-color: var(--accent-blue);
     }
@@ -529,12 +529,12 @@ export function getDashboardHtml(
       display: none;
       align-items: center;
       gap: 12px;
-      padding: 9px 16px;
-      margin-top: 12px;
+      padding: 10px 18px;
+      margin-top: 14px;
       background: color-mix(in srgb, var(--accent-blue) 10%, var(--vscode-editorWidget-background));
       border: 1px solid color-mix(in srgb, var(--accent-blue) 30%, transparent);
       border-radius: var(--radius-md);
-      font-size: 0.85em;
+      font-size: 0.90em;
       animation: fadeUp 0.15s ease both;
     }
     #bulk-bar.visible { display: flex; }
@@ -675,10 +675,10 @@ export function getDashboardHtml(
     .badge {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 3px 9px;
+      gap: 5px;
+      padding: 4px 10px;
       border-radius: 20px;
-      font-size: 0.74em;
+      font-size: 0.80em;
       font-weight: 600;
       white-space: nowrap;
       letter-spacing: 0.02em;
@@ -722,18 +722,18 @@ export function getDashboardHtml(
     /* ── Empty state ─────────────────────────────────────────────────────── */
     .empty-state {
       text-align: center;
-      padding: 56px 20px;
+      padding: 64px 20px;
       color: var(--vscode-descriptionForeground);
     }
     .empty-state-icon {
-      margin-bottom: 14px;
+      margin-bottom: 16px;
       opacity: 0.35;
     }
     .empty-state-icon svg { display: block; margin: 0 auto; }
     .empty-state-msg {
-      font-size: 0.92em;
+      font-size: 0.97em;
       line-height: 1.5;
-      max-width: 280px;
+      max-width: 300px;
       margin: 0 auto;
     }
 
@@ -826,14 +826,14 @@ export function getDashboardHtml(
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 30px;
-      height: 30px;
+      width: 32px;
+      height: 32px;
       padding: 0;
       background: transparent;
       color: var(--vscode-descriptionForeground);
       border: 1px solid transparent;
       border-radius: var(--radius-sm);
-      font-size: 16px;
+      font-size: 18px;
       opacity: 0;
       visibility: hidden;
       transition: opacity var(--transition-fast), visibility var(--transition-fast),
@@ -858,8 +858,8 @@ export function getDashboardHtml(
       color: var(--vscode-foreground);
       border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 80%, transparent);
       border-radius: var(--radius-sm);
-      padding: 5px 10px;
-      font-size: 0.76em;
+      padding: 6px 12px;
+      font-size: 0.82em;
       white-space: nowrap;
       pointer-events: none;
       box-shadow: 0 4px 14px rgba(0,0,0,0.28);
