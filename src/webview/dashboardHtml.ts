@@ -433,6 +433,15 @@ export function getDashboardHtml(
       font-weight: 600;
       font-size: 0.93em;
     }
+    .pkg-name-link {
+      cursor: pointer;
+      border-bottom: 1px dashed color-mix(in srgb, var(--vscode-foreground) 30%, transparent);
+      transition: color var(--transition-fast), border-bottom-color var(--transition-fast);
+    }
+    .pkg-name-link:hover {
+      color: var(--accent-blue);
+      border-bottom-color: var(--accent-blue);
+    }
     td.col-version,
     td.col-latest {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
@@ -1120,7 +1129,7 @@ export function getDashboardHtml(
           <td class="col-check">\${pkg.latest !== null
             ? \`<input type="checkbox" class="row-check" data-name="\${esc(pkg.name)}" \${selectedPackages.has(pkg.name) ? 'checked' : ''} title="Select for bulk update" />\`
             : ''}</td>
-          <td class="col-name">\${esc(pkg.name)}\${devTag}</td>
+          <td class="col-name"><span class="pkg-name-link" data-name="\${esc(pkg.name)}">\${esc(pkg.name)}</span>\${devTag}</td>
           <td class="col-version">\${esc(pkg.version)}</td>
           <td class="col-latest">\${latestCell}</td>
           <td class="col-date" data-iso="\${pkg.lastUpdated ? esc(pkg.lastUpdated) : ''}">\${formatDate(pkg.lastUpdated)}</td>
@@ -1372,6 +1381,24 @@ export function getDashboardHtml(
     document.getElementById('pkg-tbody').addEventListener('mouseleave', e => {
       if (e.target.closest('td.col-date')) hideTooltip();
     }, true);
+
+    // ── Package name → npmjs ───────────────────────────────────────────────
+    document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
+      const span = e.target.closest('.pkg-name-link');
+      if (!span) return;
+      showTooltip('View on npmjs.com', span.getBoundingClientRect(), false);
+    }, true);
+
+    document.getElementById('pkg-tbody').addEventListener('mouseleave', e => {
+      if (e.target.closest('.pkg-name-link')) hideTooltip();
+    }, true);
+
+    document.getElementById('pkg-tbody').addEventListener('click', e => {
+      const span = e.target.closest('.pkg-name-link');
+      if (!span) return;
+      hideTooltip();
+      vscode.postMessage({ command: 'openNpm', packageName: span.dataset.name });
+    });
 
     // ── Changelog button delegation ────────────────────────────────────────
     document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
