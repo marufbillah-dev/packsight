@@ -578,6 +578,54 @@ export function getDashboardHtml(
       margin-bottom: 24px;
       line-height: 1.6;
     }
+    /* Version upgrade arrow shown in update confirm modal */
+    #confirm-version-arrow {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin: 14px 0 20px;
+      padding: 12px 16px;
+      background: color-mix(in srgb, var(--vscode-foreground) 4%, transparent);
+      border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 60%, transparent);
+      border-radius: var(--radius-md);
+    }
+    #confirm-version-arrow.visible { display: flex; }
+    .ver-chip {
+      font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
+      font-size: 0.85em;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: var(--radius-sm);
+      white-space: nowrap;
+    }
+    .ver-chip-from {
+      color: var(--vscode-descriptionForeground);
+      background: color-mix(in srgb, var(--vscode-foreground) 8%, transparent);
+      border: 1px solid color-mix(in srgb, var(--vscode-panel-border) 70%, transparent);
+    }
+    .ver-chip-to {
+      color: var(--accent-green);
+      background: color-mix(in srgb, var(--accent-green) 10%, transparent);
+      border: 1px solid color-mix(in srgb, var(--accent-green) 28%, transparent);
+    }
+    .ver-arrow {
+      color: var(--vscode-descriptionForeground);
+      font-size: 1em;
+      opacity: 0.6;
+      flex-shrink: 0;
+    }
+    .ver-bump-tag {
+      margin-left: auto;
+      font-size: 0.70em;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .ver-bump-major { color: var(--accent-red);    background: color-mix(in srgb, var(--accent-red)    12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-red)    28%, transparent); }
+    .ver-bump-minor { color: var(--accent-blue);   background: color-mix(in srgb, var(--accent-blue)   12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-blue)   28%, transparent); }
+    .ver-bump-patch { color: var(--accent-green);  background: color-mix(in srgb, var(--accent-green)  12%, transparent); border: 1px solid color-mix(in srgb, var(--accent-green)  28%, transparent); }
     .confirm-actions {
       display: flex;
       gap: 8px;
@@ -918,6 +966,12 @@ export function getDashboardHtml(
     <div id="confirm-modal">
       <h3 id="confirm-title"></h3>
       <p id="confirm-body"></p>
+      <div id="confirm-version-arrow" aria-hidden="true">
+        <span class="ver-chip ver-chip-from" id="ver-from"></span>
+        <span class="ver-arrow">→</span>
+        <span class="ver-chip ver-chip-to" id="ver-to"></span>
+        <span class="ver-bump-tag" id="ver-bump"></span>
+      </div>
       <div class="confirm-actions">
         <button class="btn-secondary" id="confirm-cancel">Cancel</button>
         <button id="confirm-ok"></button>
@@ -1166,6 +1220,8 @@ export function getDashboardHtml(
         const updateBtn = pkg.latest !== null
           ? \`<button class="btn-primary btn-update"
                data-name="\${esc(pkg.name)}"
+               data-version="\${esc(pkg.version.replace(/^[\\^~>=<\\s]+/, ''))}"
+               data-latest="\${esc(pkg.latest ?? '')}"
                title="Update \${esc(pkg.name)} to \${esc(pkg.latest ?? '')}">Update</button>\`
           : '';
 
@@ -1341,19 +1397,35 @@ export function getDashboardHtml(
     // ── Confirm modal ──────────────────────────────────────────────────────
     let pendingAction = null;
 
-    function showConfirm(title, body, okLabel, okClass, onConfirm) {
+    function showConfirm(title, body, okLabel, okClass, onConfirm, versionInfo) {
       document.getElementById('confirm-title').textContent = title;
       document.getElementById('confirm-body').textContent  = body;
       const okBtn = document.getElementById('confirm-ok');
       okBtn.textContent  = okLabel;
       okBtn.className    = okClass;
       pendingAction      = onConfirm;
+
+      // Version upgrade arrow
+      const arrow = document.getElementById('confirm-version-arrow');
+      if (versionInfo) {
+        document.getElementById('ver-from').textContent = versionInfo.from;
+        document.getElementById('ver-to').textContent   = versionInfo.to;
+        const bump = bumpType(versionInfo.from, versionInfo.to);
+        const bumpEl = document.getElementById('ver-bump');
+        bumpEl.textContent = bump ? bump.charAt(0).toUpperCase() + bump.slice(1) : '';
+        bumpEl.className   = 'ver-bump-tag' + (bump ? ' ver-bump-' + bump : '');
+        arrow.classList.add('visible');
+      } else {
+        arrow.classList.remove('visible');
+      }
+
       document.getElementById('confirm-backdrop').classList.add('visible');
       okBtn.focus();
     }
 
     function closeConfirm() {
       document.getElementById('confirm-backdrop').classList.remove('visible');
+      document.getElementById('confirm-version-arrow').classList.remove('visible');
       pendingAction = null;
     }
 
@@ -1375,13 +1447,16 @@ export function getDashboardHtml(
       if (!(target instanceof HTMLButtonElement)) return;
 
       if (target.classList.contains('btn-update')) {
-        const name = target.dataset.name;
+        const name    = target.dataset.name;
+        const from    = target.dataset.version;
+        const to      = target.dataset.latest;
         showConfirm(
           'Update Package',
           'Update "' + name + '" to the latest version?',
           'Update',
           'btn-primary',
-          () => vscode.postMessage({ command: 'update', packageName: name })
+          () => vscode.postMessage({ command: 'update', packageName: name }),
+          { from, to }
         );
       } else if (target.classList.contains('btn-uninstall')) {
         const name   = target.dataset.name;
