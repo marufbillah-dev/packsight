@@ -1402,10 +1402,12 @@ export function getDashboardHtml(
       if (names.length === 0) return;
       const bulkItems = names.map(n => {
         const pkg = allPackages.find(p => p.name === n);
+        const rawVer  = pkg ? pkg.version : '';
+        const cleanVer = rawVer.replace(/^[^\d]+/, '') || rawVer;
         return {
           name: n,
-          from: '^' + (pkg ? pkg.version.replace(/^[\^~>=<\s]+/, '') : '?'),
-          to:   pkg ? pkg.latest ?? '?' : '?',
+          from: '^' + cleanVer,
+          to:   pkg ? (pkg.latest ?? '?') : '?',
         };
       });
       showConfirm(
