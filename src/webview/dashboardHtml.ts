@@ -1399,8 +1399,7 @@ export function getDashboardHtml(
       const span = e.target.closest('.pkg-name-link');
       if (!span) return;
       hideTooltip();
-      // Open directly in the webview — no extension round-trip, no permission prompt
-      window.open('https://www.npmjs.com/package/' + encodeURIComponent(span.dataset.name), '_blank');
+      vscode.postMessage({ command: 'openNpm', packageName: span.dataset.name });
     });
 
     // ── Changelog button delegation ────────────────────────────────────────

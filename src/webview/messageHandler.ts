@@ -100,5 +100,16 @@ export async function handleWebviewMessage(
       await vscode.env.openExternal(vscode.Uri.parse(url));
       break;
     }
+
+    case 'openNpm': {
+      const { packageName } = message;
+      // executeCommand('vscode.open') bypasses the trusted-domain prompt
+      // that env.openExternal triggers for external https:// URLs.
+      await vscode.commands.executeCommand(
+        'vscode.open',
+        vscode.Uri.parse(`https://www.npmjs.com/package/${encodeURIComponent(packageName)}`)
+      );
+      break;
+    }
   }
 }
