@@ -1621,6 +1621,17 @@ export function getDashboardHtml(
       vscode.postMessage({ command: 'openChangelog', url: target.dataset.url });
     });
 
+    // ── Runtime badge tooltips ─────────────────────────────────────────────
+    document.getElementById('badge-node').addEventListener('mouseenter', e => {
+      showTooltip('Your current Node.js version', e.currentTarget.getBoundingClientRect(), true);
+    });
+    document.getElementById('badge-node').addEventListener('mouseleave', hideTooltip);
+
+    document.getElementById('badge-npm').addEventListener('mouseenter', e => {
+      showTooltip('Your current npm version', e.currentTarget.getBoundingClientRect(), true);
+    });
+    document.getElementById('badge-npm').addEventListener('mouseleave', hideTooltip);
+
     // Signal the extension that the webview DOM is ready and can receive messages.
     // The extension listener is registered before html is set, so this is always heard.
     vscode.postMessage({ command: 'ready' });
