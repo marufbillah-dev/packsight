@@ -1757,6 +1757,16 @@ export function getDashboardHtml(
       applyScale(Math.min(SCALE_MAX, Math.round((cur + SCALE_STEP) * 100) / 100));
     });
 
+    // Ctrl + scroll wheel to adjust scale
+    window.addEventListener('wheel', e => {
+      if (!e.ctrlKey) return;
+      e.preventDefault();
+      const cur = parseFloat(document.body.style.getPropertyValue('--ui-scale') || '1');
+      const delta = e.deltaY < 0 ? SCALE_STEP : -SCALE_STEP;
+      const next = Math.min(SCALE_MAX, Math.max(SCALE_MIN, Math.round((cur + delta) * 100) / 100));
+      applyScale(next);
+    }, { passive: false });
+
     // ── User interactions ──────────────────────────────────────────────────
     document.getElementById('btn-refresh').addEventListener('click', () => {
       setLoading(true, 'Refreshing…');
