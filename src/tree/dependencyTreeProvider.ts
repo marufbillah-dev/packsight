@@ -74,7 +74,8 @@ export class DependencyTreeProvider
       if (this.hasError) {
         return [DependencyItem.createError('No package.json found in workspace')];
       }
-      if (this.scanning) {
+      // Only show the spinner on the very first load before any data exists
+      if (this.initialLoad) {
         return [DependencyItem.createLoading()];
       }
       return this.buildGroupNodes();
@@ -103,7 +104,7 @@ export class DependencyTreeProvider
       this.dependencyMap = parseDependencies(this.workspaceRoot);
     }
 
-    // Show immediately — either error node or current (possibly stale) data
+    // Render immediately — error node on first load, or existing (stale) data on refresh
     this._onDidChangeTreeData.fire();
 
     if (this.hasError || this.scanning) {
@@ -111,11 +112,7 @@ export class DependencyTreeProvider
     }
 
     this.scanning = true;
-    // Only show the spinner on the very first load when there's no data yet.
-    // On subsequent refreshes, keep showing the existing data silently.
-    if (this.initialLoad) {
-      this._onDidChangeTreeData.fire();
-    }
+    // No spinner fire here — getChildren uses initialLoad, not scanning
 
     setImmediate(() => {
       void (async () => {
