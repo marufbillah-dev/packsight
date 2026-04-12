@@ -1,12 +1,12 @@
-import * as vscode from 'vscode';
-import { dependencyChanged } from '../events/dependencyEventEmitter';
-import { parseDependencies } from '../services/dependencyService';
-import { scanUsedPackages } from '../services/scanService';
-import { getOutdatedPackages } from '../services/npmService';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as vscode from "vscode";
+import { dependencyChanged } from "../events/dependencyEventEmitter";
+import { parseDependencies } from "../services/dependencyService";
+import { scanUsedPackages } from "../services/scanService";
+import { getOutdatedPackages } from "../services/npmService";
+import * as fs from "fs";
+import * as path from "path";
 
-const REPO = 'https://github.com/imarufbillah/packsight';
+const REPO = "https://github.com/imarufbillah/packsight";
 
 export interface SidebarPackage {
   name: string;
@@ -17,20 +17,20 @@ export interface SidebarPackage {
 }
 
 type SidebarMessage =
-  | { command: 'refresh' }
-  | { command: 'switchToDashboard' }
-  | { command: 'switchToTreeView' }
-  | { command: 'uninstall'; packageName: string; isDev: boolean }
-  | { command: 'update'; packageName: string }
-  | { command: 'copyName'; packageName: string }
-  | { command: 'openUrl'; url: string };
+  | { command: "refresh" }
+  | { command: "switchToDashboard" }
+  | { command: "switchToTreeView" }
+  | { command: "uninstall"; packageName: string; isDev: boolean }
+  | { command: "update"; packageName: string }
+  | { command: "copyName"; packageName: string }
+  | { command: "openUrl"; url: string };
 
 /**
  * Single webview view that owns the entire PackSight sidebar:
  * toggle button, package list, quick links, and author credit.
  */
 export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
-  public static readonly viewId = 'packSight.sidebar';
+  public static readonly viewId = "packSight.sidebar";
 
   private view?: vscode.WebviewView;
   private dashboardOpen = false;
@@ -70,13 +70,26 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage((msg: SidebarMessage) => {
       switch (msg.command) {
-        case 'refresh':          this.loadAndScan(); this.onRefresh(); break;
-        case 'switchToDashboard': this.onSwitchToDashboard(); break;
-        case 'switchToTreeView':  this.onSwitchToTreeView(); break;
-        case 'uninstall':        this.onUninstall(msg.packageName, msg.isDev); break;
-        case 'update':           this.onUpdate(msg.packageName); break;
-        case 'copyName':         this.onCopyName(msg.packageName); break;
-        case 'openUrl':
+        case "refresh":
+          this.loadAndScan();
+          this.onRefresh();
+          break;
+        case "switchToDashboard":
+          this.onSwitchToDashboard();
+          break;
+        case "switchToTreeView":
+          this.onSwitchToTreeView();
+          break;
+        case "uninstall":
+          this.onUninstall(msg.packageName, msg.isDev);
+          break;
+        case "update":
+          this.onUpdate(msg.packageName);
+          break;
+        case "copyName":
+          this.onCopyName(msg.packageName);
+          break;
+        case "openUrl":
           void vscode.env.openExternal(vscode.Uri.parse(msg.url));
           break;
       }
@@ -99,45 +112,70 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
   // ── Data loading ───────────────────────────────────────────────────────────
 
   private loadAndScan(): void {
-    const pkgPath = path.join(this.workspaceRoot, 'package.json');
+    const pkgPath = path.join(this.workspaceRoot, "package.json");
     this.hasError = !fs.existsSync(pkgPath);
 
     if (!this.hasError) {
-      const { dependencies, devDependencies } = parseDependencies(this.workspaceRoot);
+      const { dependencies, devDependencies } = parseDependencies(
+        this.workspaceRoot,
+      );
       // Merge with existing data so UI doesn't flash empty on refresh
       if (this.initialLoad) {
         this.packages = [
-          ...dependencies.map(p => ({ name: p.name, version: p.version, isDev: false, isUnused: false, latestVersion: null })),
-          ...devDependencies.map(p => ({ name: p.name, version: p.version, isDev: true, isUnused: false, latestVersion: null })),
+          ...dependencies.map((p) => ({
+            name: p.name,
+            version: p.version,
+            isDev: false,
+            isUnused: false,
+            latestVersion: null,
+          })),
+          ...devDependencies.map((p) => ({
+            name: p.name,
+            version: p.version,
+            isDev: true,
+            isUnused: false,
+            latestVersion: null,
+          })),
         ];
       }
     }
 
     this.render();
 
-    if (this.hasError || this.scanning) { return; }
+    if (this.hasError || this.scanning) {
+      return;
+    }
 
     this.scanning = true;
 
     setImmediate(() => {
       void (async () => {
         try {
-          const { dependencies, devDependencies } = parseDependencies(this.workspaceRoot);
+          const { dependencies, devDependencies } = parseDependencies(
+            this.workspaceRoot,
+          );
           const allEntries = [
-            ...dependencies.map(p => ({ name: p.name, version: p.version })),
-            ...devDependencies.map(p => ({ name: p.name, version: p.version })),
+            ...dependencies.map((p) => ({ name: p.name, version: p.version })),
+            ...devDependencies.map((p) => ({
+              name: p.name,
+              version: p.version,
+            })),
           ];
           const usedPackages = scanUsedPackages(this.workspaceRoot);
-          const outdatedMap  = await getOutdatedPackages(allEntries);
+          const outdatedMap = await getOutdatedPackages(allEntries);
 
           this.packages = [
-            ...dependencies.map(p => ({
-              name: p.name, version: p.version, isDev: false,
+            ...dependencies.map((p) => ({
+              name: p.name,
+              version: p.version,
+              isDev: false,
               isUnused: !usedPackages.has(p.name),
               latestVersion: outdatedMap.get(p.name)?.latest ?? null,
             })),
-            ...devDependencies.map(p => ({
-              name: p.name, version: p.version, isDev: true,
+            ...devDependencies.map((p) => ({
+              name: p.name,
+              version: p.version,
+              isDev: true,
               isUnused: !usedPackages.has(p.name),
               latestVersion: outdatedMap.get(p.name)?.latest ?? null,
             })),
@@ -156,41 +194,63 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
   // ── Rendering ──────────────────────────────────────────────────────────────
 
   private render(): void {
-    if (!this.view) { return; }
+    if (!this.view) {
+      return;
+    }
     this.view.webview.html = this.getHtml();
   }
 
   private getHtml(): string {
     const codiconUri = this.view!.webview.asWebviewUri(
-      vscode.Uri.joinPath(this.extensionUri, 'node_modules', '@vscode', 'codicons', 'dist', 'codicon.css')
+      vscode.Uri.joinPath(
+        this.extensionUri,
+        "node_modules",
+        "@vscode",
+        "codicons",
+        "dist",
+        "codicon.css",
+      ),
     );
     const cspSource = this.view!.webview.cspSource;
 
-    const deps    = this.packages.filter(p => !p.isDev);
-    const devDeps = this.packages.filter(p => p.isDev);
-    const total   = this.packages.length;
+    const deps = this.packages.filter((p) => !p.isDev);
+    const devDeps = this.packages.filter((p) => p.isDev);
+    const total = this.packages.length;
 
     const toggleBtn = this.dashboardOpen
       ? `<button class="toggle-btn" onclick="post('switchToTreeView')"><span class="codicon codicon-list-tree"></span>Switch to Tree View</button>`
-      : `<button class="toggle-btn" onclick="post('switchToDashboard')"><span class="codicon codicon-layout-panel"></span>Open Package Manager</button>`;
+      : `<button class="toggle-btn" onclick="post('switchToDashboard')"><span class="codicon codicon-layout-panel"></span>Open Dashboard</button>`;
 
     const renderPkg = (p: SidebarPackage): string => {
       const isOutdated = p.latestVersion !== null;
-      let iconCls = 'codicon-circle-filled icon-ok';
-      if (isOutdated && p.isUnused) { iconCls = 'codicon-circle-slash icon-crit'; }
-      else if (isOutdated)          { iconCls = 'codicon-arrow-circle-up icon-outdated'; }
-      else if (p.isUnused)          { iconCls = 'codicon-warning icon-unused'; }
+      let iconCls = "codicon-circle-filled icon-ok";
+      if (isOutdated && p.isUnused) {
+        iconCls = "codicon-circle-slash icon-crit";
+      } else if (isOutdated) {
+        iconCls = "codicon-arrow-circle-up icon-outdated";
+      } else if (p.isUnused) {
+        iconCls = "codicon-warning icon-unused";
+      }
 
       const badges = [
-        p.isDev     ? '<span class="badge badge-dev">dev</span>' : '',
-        p.isUnused  ? '<span class="badge badge-unused">unused</span>' : '',
-        isOutdated  ? `<span class="badge badge-outdated">↑ ${p.latestVersion}</span>` : '',
-      ].join('');
+        p.isDev ? '<span class="badge badge-dev">dev</span>' : "",
+        p.isUnused ? '<span class="badge badge-unused">unused</span>' : "",
+        isOutdated
+          ? `<span class="badge badge-outdated">↑ ${p.latestVersion}</span>`
+          : "",
+      ].join("");
 
-      const name = p.name.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-      const ver  = p.version.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      const name = p.name
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+      const ver = p.version
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 
-      return `<div class="pkg-row" data-name="${name}" data-dev="${p.isDev}" data-latest="${p.latestVersion ?? ''}">
+      return `<div class="pkg-row" data-name="${name}" data-dev="${p.isDev}" data-latest="${p.latestVersion ?? ""}">
         <span class="codicon ${iconCls} pkg-icon"></span>
         <div class="pkg-info">
           <span class="pkg-name">${name}</span>
@@ -198,17 +258,24 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
           ${badges}
         </div>
         <div class="pkg-actions">
-          ${isOutdated ? `<button class="act-btn act-update" title="Update to ${p.latestVersion}" onclick="update('${name}','${p.latestVersion}')"><span class="codicon codicon-arrow-up"></span></button>` : ''}
+          ${isOutdated ? `<button class="act-btn act-update" title="Update to ${p.latestVersion}" onclick="update('${name}','${p.latestVersion}')"><span class="codicon codicon-arrow-up"></span></button>` : ""}
           <button class="act-btn act-copy" title="Copy name" onclick="copyName('${name}')"><span class="codicon codicon-copy"></span></button>
           <button class="act-btn act-remove" title="Uninstall" onclick="uninstall('${name}',${p.isDev})"><span class="codicon codicon-trash"></span></button>
         </div>
       </div>`;
     };
 
-    const renderGroup = (label: string, pkgs: SidebarPackage[], id: string): string => {
-      if (pkgs.length === 0) { return ''; }
-      const unused = pkgs.filter(p => p.isUnused).length;
-      const badge  = unused > 0 ? ` <span class="group-badge">${unused} unused</span>` : '';
+    const renderGroup = (
+      label: string,
+      pkgs: SidebarPackage[],
+      id: string,
+    ): string => {
+      if (pkgs.length === 0) {
+        return "";
+      }
+      const unused = pkgs.filter((p) => p.isUnused).length;
+      const badge =
+        unused > 0 ? ` <span class="group-badge">${unused} unused</span>` : "";
       return `<div class="group">
         <div class="group-header" onclick="toggleGroup('${id}')">
           <span class="codicon codicon-chevron-down group-chevron" id="chev-${id}"></span>
@@ -216,7 +283,7 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
           <span class="group-count">${pkgs.length}</span>${badge}
         </div>
         <div class="group-body" id="grp-${id}">
-          ${pkgs.map(renderPkg).join('')}
+          ${pkgs.map(renderPkg).join("")}
         </div>
       </div>`;
     };
@@ -227,18 +294,32 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
         ? `<div class="state-msg"><span class="codicon codicon-loading~spin state-icon"></span><span>Loading packages…</span></div>`
         : total === 0
           ? `<div class="state-msg"><span class="codicon codicon-package state-icon"></span><span>No packages found</span></div>`
-          : renderGroup('Dependencies', deps, 'deps') + renderGroup('Dev Dependencies', devDeps, 'devdeps');
+          : renderGroup("Dependencies", deps, "deps") +
+            renderGroup("Dev Dependencies", devDeps, "devdeps");
 
     const links = [
-      { icon: 'star-full',        label: 'Give a Star',      url: REPO },
-      { icon: 'book',             label: 'Documentation',    url: `${REPO}#readme` },
-      { icon: 'bug',              label: 'Report an Issue',  url: `${REPO}/issues/new` },
-      { icon: 'lightbulb',        label: 'Feature Request',  url: `${REPO}/issues/new?labels=enhancement` },
-      { icon: 'history',          label: 'Changelog',        url: `${REPO}/releases` },
-      { icon: 'git-pull-request', label: 'Contribute',       url: `${REPO}/blob/main/CONTRIBUTING.md` },
-    ].map(l => `<button class="link-btn" onclick="openUrl('${l.url}')"><span class="codicon codicon-${l.icon}"></span>${l.label}</button>`).join('');
+      { icon: "star-full", label: "Give a Star", url: REPO },
+      { icon: "book", label: "Documentation", url: `${REPO}#readme` },
+      { icon: "bug", label: "Report an Issue", url: `${REPO}/issues/new` },
+      {
+        icon: "lightbulb",
+        label: "Feature Request",
+        url: `${REPO}/issues/new?labels=enhancement`,
+      },
+      { icon: "history", label: "Changelog", url: `${REPO}/releases` },
+      {
+        icon: "git-pull-request",
+        label: "Contribute",
+        url: `${REPO}/blob/main/CONTRIBUTING.md`,
+      },
+    ]
+      .map(
+        (l) =>
+          `<button class="link-btn" onclick="openUrl('${l.url}')"><span class="codicon codicon-${l.icon}"></span>${l.label}</button>`,
+      )
+      .join("");
 
-    return /* html */`<!DOCTYPE html>
+    return /* html */ `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -537,7 +618,7 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
 
   <!-- Packages section -->
   <div class="section-header">
-    <span class="section-title">Packages${total > 0 ? ` (${total})` : ''}</span>
+    <span class="section-title">Packages${total > 0 ? ` (${total})` : ""}</span>
     <div class="section-actions">
       <button class="icon-btn" title="Refresh" onclick="post('refresh')"><span class="codicon codicon-refresh"></span></button>
     </div>
@@ -549,7 +630,7 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
   <!-- Quick links -->
   <div class="links-section">
     <div class="section-header">
-      <span class="section-title">PackSight</span>
+      <span class="section-title">Quick Links</span>
     </div>
     ${links}
     <div class="divider" style="margin-top:4px"></div>
