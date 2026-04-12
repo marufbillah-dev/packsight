@@ -134,7 +134,7 @@
         {
           "command": "packSight.openDashboard",
           "when": "resourceFilename == package.json",
-          "group": "1_modification@-1"
+          "group": "navigation@-1"
         }
       ]
     }

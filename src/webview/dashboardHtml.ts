@@ -1516,6 +1516,12 @@ export function getDashboardHtml(
         selectAll.indeterminate = count > 0 && count < updatable.length;
         selectAll.checked = updatable.length > 0 && count === updatable.length;
       }
+
+      // Hide the entire checkbox column when no packages are updatable
+      const hasUpdatable = updatable.length > 0;
+      document.querySelectorAll('.col-check').forEach(el => {
+        el.style.display = hasUpdatable ? '' : 'none';
+      });
     }
 
     // ── Table render ───────────────────────────────────────────────────────
@@ -1779,6 +1785,7 @@ export function getDashboardHtml(
       if (btn) {
         const packageName = btn.dataset.name;
         const isDev = btn.dataset.dev === 'true';
+        hideTooltip();
         closeBrowsePanel();
         vscode.postMessage({ command: 'installPackage', packageName, isDev });
         return;
