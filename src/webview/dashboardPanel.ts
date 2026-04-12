@@ -4,6 +4,7 @@ import { getOutdatedPackages, getPackagesLastUpdated, getPackageSizes, getPackag
 import { scanUsedPackages } from "../services/scanService";
 import { getDashboardHtml } from "./dashboardHtml";
 import { handleWebviewMessage } from "./messageHandler";
+import { ViewSwitchWebviewProvider } from "./viewSwitchWebview";
 import { CONTEXT_KEYS } from "../constants";
 import {
   DashboardData,
@@ -20,6 +21,12 @@ export class DashboardPanel {
   private static instance: DashboardPanel | undefined;
   /** Cached payload from the last successful loadData — survives panel dispose/recreate */
   private static cachedData: DashboardData | undefined;
+  /** Reference to the sidebar switch button so it stays in sync on manual close */
+  private static viewSwitchProvider: ViewSwitchWebviewProvider | undefined;
+
+  public static setViewSwitchProvider(p: ViewSwitchWebviewProvider): void {
+    DashboardPanel.viewSwitchProvider = p;
+  }
 
   private readonly panel: vscode.WebviewPanel;
   private readonly workspaceRoot: string;
@@ -243,6 +250,8 @@ export class DashboardPanel {
       CONTEXT_KEYS.DASHBOARD_OPEN,
       false,
     );
+    // Sync the sidebar switch button when the panel is closed manually
+    DashboardPanel.viewSwitchProvider?.setDashboardOpen(false);
     this.panel.dispose();
     for (const d of this.disposables) {
       d.dispose();

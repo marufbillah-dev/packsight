@@ -2,7 +2,10 @@ import * as vscode from 'vscode';
 
 /**
  * Sidebar webview that renders a single styled toggle button:
- * 'Open Dashboard' or 'Switch to Tree View' depending on state.
+ * 'Open Package Manager' or 'Switch to Tree View' depending on state.
+ *
+ * setDashboardOpen() must be called whenever the dashboard opens or closes
+ * (including when the user manually closes the panel tab).
  */
 export class ViewSwitchWebviewProvider implements vscode.WebviewViewProvider {
   public static readonly viewId = 'packSight.viewSwitch';
@@ -19,7 +22,7 @@ export class ViewSwitchWebviewProvider implements vscode.WebviewViewProvider {
   public resolveWebviewView(webviewView: vscode.WebviewView): void {
     this.view = webviewView;
     webviewView.webview.options = { enableScripts: true };
-    webviewView.webview.html = this.getHtml();
+    this.render();
 
     webviewView.webview.onDidReceiveMessage((msg: { command: string }) => {
       if (msg.command === 'switchToDashboard') {
@@ -32,18 +35,18 @@ export class ViewSwitchWebviewProvider implements vscode.WebviewViewProvider {
 
   public setDashboardOpen(open: boolean): void {
     this.dashboardOpen = open;
-    if (this.view) {
-      this.view.webview.html = this.getHtml();
-    }
+    this.render();
+  }
+
+  private render(): void {
+    if (!this.view) { return; }
+    this.view.webview.html = this.getHtml();
   }
 
   private getHtml(): string {
     const isDash = this.dashboardOpen;
-    const btnLabel = isDash ? '🌲 Switch to Tree View' : '⚡ Open Package Manager';
-    const btnCmd  = isDash ? 'switchToTreeView' : 'switchToDashboard';
-    const btnDesc = isDash
-      ? 'Go back to the dependency tree'
-      : 'Open the visual Package Manager dashboard';
+    const btnLabel = isDash ? '🌲  Switch to Tree View' : '⚡  Open Dashboard View';
+    const btnCmd   = isDash ? 'switchToTreeView' : 'switchToDashboard';
 
     return /* html */`<!DOCTYPE html>
 <html lang="en">
@@ -52,43 +55,37 @@ export class ViewSwitchWebviewProvider implements vscode.WebviewViewProvider {
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline';"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
     body {
-      padding: 8px 12px 10px;
+      padding: 6px 10px 8px;
       font-family: var(--vscode-font-family);
       font-size: var(--vscode-font-size);
-      color: var(--vscode-foreground);
       background: transparent;
     }
     button {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 7px 12px;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 10px;
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
       border: none;
       border-radius: 4px;
       font-size: 0.88em;
       font-family: var(--vscode-font-family);
-      font-weight: 500;
+      font-weight: 600;
       cursor: pointer;
       transition: background 120ms ease;
-      text-align: left;
+      letter-spacing: 0.01em;
     }
     button:hover { background: var(--vscode-button-hoverBackground); }
-    .desc {
-      margin-top: 5px;
-      font-size: 0.76em;
-      color: var(--vscode-descriptionForeground);
-      padding: 0 2px;
-      line-height: 1.4;
-    }
+    button:active { opacity: 0.85; }
   </style>
 </head>
 <body>
-  <button id="btn" onclick="go()">${btnLabel}</button>
-  <div class="desc">${btnDesc}</div>
+  <button onclick="go()">${btnLabel}</button>
   <script>
     const vscode = acquireVsCodeApi();
     function go() { vscode.postMessage({ command: '${btnCmd}' }); }

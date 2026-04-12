@@ -49,20 +49,22 @@
       "packSightContainer": [
         {
           "id": "packSight.viewSwitch",
-          "name": "View",
+          "name": "Switch View",
           "type": "webview",
-          "when": "true"
+          "when": "true",
+          "visibility": "visible"
         },
         {
           "id": "packSight.dependencies",
-          "name": "PackSight",
+          "name": "Packages",
           "contextualTitle": "PackSight"
         },
         {
           "id": "packSight.quickLinks",
           "name": "PackSight",
           "type": "webview",
-          "when": "true"
+          "when": "true",
+          "visibility": "visible"
         }
       ]
     },

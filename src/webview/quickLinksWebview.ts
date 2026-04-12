@@ -99,12 +99,11 @@ export class QuickLinksWebviewProvider implements vscode.WebviewViewProvider {
       opacity: 0.5;
     }
     .author {
-      display: flex;
-      align-items: center;
-      gap: 7px;
-      padding: 4px 8px 0;
-      font-size: 0.78em;
+      text-align: center;
+      padding: 4px 8px 2px;
+      font-size: 0.76em;
       color: var(--vscode-descriptionForeground);
+      line-height: 1.5;
     }
     .author-link {
       color: var(--vscode-textLink-foreground);
@@ -124,8 +123,7 @@ export class QuickLinksWebviewProvider implements vscode.WebviewViewProvider {
   ${rows}
   <hr class="divider"/>
   <div class="author">
-    <span class="codicon codicon-account"></span>
-    <span>Made by <button class="author-link" onclick="open('https://github.com/imarufbillah')">Maruf Billah</button></span>
+    Made by <button class="author-link" onclick="open('https://github.com/imarufbillah')">Maruf Billah</button>
   </div>
   <script>
     const vscode = acquireVsCodeApi();

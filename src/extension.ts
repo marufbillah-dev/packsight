@@ -42,6 +42,7 @@ export function activate(context: vscode.ExtensionContext): void {
     context.extensionUri, context, workspaceRoot
   );
   viewSwitchProvider.setDashboardOpen(wasDashboardOpen);
+  DashboardPanel.setViewSwitchProvider(viewSwitchProvider);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(ViewSwitchWebviewProvider.viewId, viewSwitchProvider)
   );
