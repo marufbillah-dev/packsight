@@ -269,55 +269,7 @@ PackSight uses `npm` CLI commands internally (`npm view`, `npm audit`, `npm inst
 
 ## Contributing
 
-PackSight is open source and contributions are welcome.
-
-**Repository:** [github.com/imarufbillah/packsight](https://github.com/imarufbillah/packsight)
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/imarufbillah/packsight.git
-cd packsight
-
-# Install dependencies
-npm install
-
-# Compile TypeScript
-npm run compile
-
-# Open in VS Code and press F5 to launch the Extension Development Host
-code .
-```
-
-### Project Structure
-
-```
-src/
-├── commands/          # VS Code command handlers
-├── events/            # Shared event emitters
-├── services/          # npm CLI wrappers and data services
-│   ├── dependencyService.ts   # package.json parsing
-│   ├── npmService.ts          # registry fetching, audit, search
-│   └── scanService.ts         # AST-based import scanning
-├── utils/             # File scanner and package name extractor
-├── webview/           # Webview providers
-│   ├── dashboardHtml.ts       # Full dashboard HTML/CSS/JS
-│   ├── dashboardPanel.ts      # Dashboard panel lifecycle & caching
-│   ├── messageHandler.ts      # Webview ↔ extension message routing
-│   ├── sidebarWebview.ts      # Unified sidebar webview
-│   └── viewSwitchWebview.ts   # Toggle button webview
-└── extension.ts       # Activation entry point
-```
-
-### Submitting Changes
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feat/your-feature`
-3. Commit with [Conventional Commits](https://www.conventionalcommits.org/): `feat(dashboard): add xyz`
-4. Open a pull request against `main`
-
-Please open an issue before starting work on large features so we can discuss the approach first.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, commit conventions, and pull request guidelines.
 
 ---
 
