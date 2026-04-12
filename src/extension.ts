@@ -1,12 +1,14 @@
 import * as vscode from 'vscode';
 import { DependencyTreeProvider } from './tree/dependencyTreeProvider';
+import { ViewSwitchProvider } from './tree/viewSwitchProvider';
+import { QuickLinksProvider } from './tree/quickLinksProvider';
 import { refreshCommand } from './commands/refresh';
 import { uninstallCommand } from './commands/uninstall';
 import { updateCommand } from './commands/update';
 import { registerToggleCommands, setDashboardOpen } from './commands/toggleDashboard';
 import { DashboardPanel } from './webview/dashboardPanel';
 import { dependencyChanged } from './events/dependencyEventEmitter';
-import { COMMANDS, CONTEXT_KEYS, VIEW_ID, WATCHER_DEBOUNCE_MS } from './constants';
+import { COMMANDS, CONTEXT_KEYS, VIEW_ID, VIEW_SWITCH_ID, VIEW_QUICK_LINKS_ID, WATCHER_DEBOUNCE_MS } from './constants';
 import { DependencyItem } from './tree/dependencyItem';
 
 /**
@@ -34,6 +36,14 @@ export function activate(context: vscode.ExtensionContext): void {
   if (wasDashboardOpen) {
     DashboardPanel.createOrShow(context, workspaceRoot);
   }
+
+  // ── View-switch provider (top of sidebar) ──────────────────────────────────
+  const viewSwitchProvider = new ViewSwitchProvider();
+  viewSwitchProvider.setDashboardOpen(wasDashboardOpen);
+  vscode.window.registerTreeDataProvider(VIEW_SWITCH_ID, viewSwitchProvider);
+
+  // ── Quick links provider (bottom of sidebar) ───────────────────────────────
+  vscode.window.registerTreeDataProvider(VIEW_QUICK_LINKS_ID, new QuickLinksProvider());
 
   // ── Tree provider ──────────────────────────────────────────────────────────
   const treeProvider = new DependencyTreeProvider(workspaceRoot);
@@ -122,7 +132,25 @@ export function activate(context: vscode.ExtensionContext): void {
   );
 
   // ── Toggle commands ────────────────────────────────────────────────────────
-  const toggleDisposables = registerToggleCommands(context, workspaceRoot);
+  const toggleDisposables = registerToggleCommands(context, workspaceRoot, viewSwitchProvider);
+
+  // ── Open Dashboard command (Command Palette + package.json right-click) ────
+  const openDashboardDisposable = vscode.commands.registerCommand(
+    COMMANDS.OPEN_DASHBOARD,
+    () => {
+      setDashboardOpen(context, true);
+      viewSwitchProvider.setDashboardOpen(true);
+      DashboardPanel.createOrShow(context, workspaceRoot);
+    }
+  );
+
+  // ── Open Link command (quick links tree) ───────────────────────────────────
+  const openLinkDisposable = vscode.commands.registerCommand(
+    COMMANDS.OPEN_LINK,
+    (url: string) => {
+      void vscode.env.openExternal(vscode.Uri.parse(url));
+    }
+  );
 
   // ── Register all disposables ───────────────────────────────────────────────
   context.subscriptions.push(
@@ -135,6 +163,8 @@ export function activate(context: vscode.ExtensionContext): void {
     copyNameDisposable,
     dashboardSyncDisposable,
     dependencyChanged,
+    openDashboardDisposable,
+    openLinkDisposable,
     ...toggleDisposables
   );
 }

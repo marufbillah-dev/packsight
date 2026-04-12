@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { CONTEXT_KEYS } from '../constants';
 import { DashboardPanel } from '../webview/dashboardPanel';
+import { ViewSwitchProvider } from '../tree/viewSwitchProvider';
 
 /**
  * Sets the `packSight.dashboardOpen` context key and persists the chosen
@@ -23,12 +24,14 @@ export function setDashboardOpen(
  */
 export function registerToggleCommands(
   context: vscode.ExtensionContext,
-  workspaceRoot: string
+  workspaceRoot: string,
+  viewSwitchProvider: ViewSwitchProvider,
 ): vscode.Disposable[] {
   const switchToDashboard = vscode.commands.registerCommand(
     'packSight.switchToDashboard',
     () => {
       setDashboardOpen(context, true);
+      viewSwitchProvider.setDashboardOpen(true);
       DashboardPanel.createOrShow(context, workspaceRoot);
     }
   );
@@ -37,6 +40,7 @@ export function registerToggleCommands(
     'packSight.switchToTreeView',
     () => {
       setDashboardOpen(context, false);
+      viewSwitchProvider.setDashboardOpen(false);
       DashboardPanel.closeIfOpen();
     }
   );

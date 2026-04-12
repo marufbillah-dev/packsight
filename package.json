@@ -48,9 +48,21 @@
     "views": {
       "packSightContainer": [
         {
+          "id": "packSight.viewSwitch",
+          "name": "View",
+          "type": "tree",
+          "when": "true"
+        },
+        {
           "id": "packSight.dependencies",
           "name": "PackSight",
           "contextualTitle": "PackSight"
+        },
+        {
+          "id": "packSight.quickLinks",
+          "name": "PackSight — by Maruf Billah",
+          "type": "tree",
+          "when": "true"
         }
       ]
     },
@@ -78,15 +90,32 @@
       },
       {
         "command": "packSight.switchToDashboard",
-        "title": "⚡ Switch to Dashboard",
+        "title": "Switch to Dashboard",
         "icon": "$(layout-panel)",
         "category": "PackSight"
       },
       {
         "command": "packSight.switchToTreeView",
-        "title": "🌲 Switch to Tree View",
+        "title": "Switch to Tree View",
         "icon": "$(list-tree)",
         "category": "PackSight"
+      },
+      {
+        "command": "packSight.openDashboard",
+        "title": "Open Package Manager",
+        "category": "PackSight"
+      },
+      {
+        "command": "packSight.openLink",
+        "title": "Open Link",
+        "category": "PackSight"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "packSight.openDashboard",
+        "key": "ctrl+shift+p",
+        "when": "false"
       }
     ],
     "configuration": {
@@ -107,6 +136,19 @@
       }
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "packSight.openDashboard",
+          "when": "workspaceFolderCount > 0"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "packSight.openDashboard",
+          "when": "resourceFilename == package.json",
+          "group": "packSight@1"
+        }
+      ],
       "view/title": [
         {
           "command": "packSight.refresh",
