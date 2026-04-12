@@ -8,6 +8,7 @@ export interface DashboardPackage {
   lastUpdated: string | null;  // ISO date string of the installed version's publish time
   size: number | null;         // unpacked size in bytes
   repoUrl: string | null;      // GitHub releases URL, null if unavailable
+  vulnSeverity: 'critical' | 'high' | 'moderate' | 'low' | null; // null = no known vulnerability
 }
 
 /** Full payload sent to the webview on every data load/refresh */

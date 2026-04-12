@@ -387,6 +387,67 @@ export async function searchNpmPackages(
   });
 }
 
+/** Severity levels returned by npm audit */
+export type VulnSeverity = 'critical' | 'high' | 'moderate' | 'low';
+
+/** Raw shape of a single entry in npm audit --json `vulnerabilities` map */
+interface AuditVulnerability {
+  severity?: string;
+  effects?: string[];
+}
+
+/** Raw shape of the npm audit --json output */
+interface AuditJson {
+  vulnerabilities?: Record<string, AuditVulnerability>;
+}
+
+/**
+ * Runs `npm audit --json` in the workspace and returns a map of
+ * package name → highest severity found.
+ *
+ * npm audit exits with a non-zero code when vulnerabilities are found,
+ * so we must not reject on error — we parse stdout regardless.
+ *
+ * Returns an empty map if audit cannot run (e.g. no package-lock.json).
+ */
+export async function getVulnerabilities(
+  workspaceRoot: string
+): Promise<Map<string, VulnSeverity>> {
+  const SEVERITY_RANK: Record<string, number> = {
+    critical: 4, high: 3, moderate: 2, low: 1, info: 0,
+  };
+
+  return new Promise((resolve) => {
+    cp.exec(
+      'npm audit --json',
+      { cwd: workspaceRoot, timeout: 30000 },
+      (_error, stdout) => {
+        // npm audit exits non-zero when vulns exist — always try to parse stdout
+        if (!stdout.trim()) { resolve(new Map()); return; }
+        try {
+          const data = JSON.parse(stdout.trim()) as AuditJson;
+          const vulns = data.vulnerabilities;
+          if (!vulns || typeof vulns !== 'object') { resolve(new Map()); return; }
+
+          const result = new Map<string, VulnSeverity>();
+          for (const [name, info] of Object.entries(vulns)) {
+            const sev = (info.severity ?? '').toLowerCase();
+            if (sev in SEVERITY_RANK && sev !== 'info') {
+              const existing = result.get(name);
+              if (!existing || SEVERITY_RANK[sev] > SEVERITY_RANK[existing]) {
+                result.set(name, sev as VulnSeverity);
+              }
+            }
+          }
+          resolve(result);
+        } catch {
+          resolve(new Map());
+        }
+      }
+    );
+  });
+}
+
 interface ExecError {
   stdout: string;
   stderr: string;

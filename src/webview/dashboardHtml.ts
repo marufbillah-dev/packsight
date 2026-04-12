@@ -543,6 +543,21 @@ export function getDashboardHtml(
       letter-spacing: 0.04em;
       text-transform: uppercase;
     }
+    /* ── Vulnerability icon in name column ───────────────────────────────── */
+    .vuln-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: 6px;
+      vertical-align: middle;
+      cursor: default;
+      flex-shrink: 0;
+    }
+    .vuln-icon svg { display: block; }
+    .vuln-critical { color: #f87171; }
+    .vuln-high     { color: #fb923c; }
+    .vuln-moderate { color: #fbbf24; }
+    .vuln-low      { color: #a3e635; }
     .latest-dash { color: var(--vscode-descriptionForeground); opacity: 0.4; }
     td.col-date {
       font-family: 'JetBrains Mono', var(--vscode-editor-font-family, monospace), monospace;
@@ -1505,6 +1520,12 @@ export function getDashboardHtml(
 
         const devTag = pkg.isDev ? '<span class="dev-tag">dev</span>' : '';
 
+        // Shield SVG — same path for all severities, colour set by class
+        const SHIELD_SVG = '<svg width="13" height="13" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M8 1.5 L2 4v4c0 3.31 2.5 5.8 6 6.5 3.5-.7 6-3.19 6-6.5V4L8 1.5z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" fill="color-mix(in srgb, currentColor 15%, transparent)"/><path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>';
+        const vulnIcon = pkg.vulnSeverity
+          ? \`<span class="vuln-icon vuln-\${pkg.vulnSeverity}" data-vuln="\${pkg.vulnSeverity}" aria-label="\${pkg.vulnSeverity} vulnerability">\${SHIELD_SVG}</span>\`
+          : '';
+
         const updateBtn = pkg.latest !== null
           ? \`<button class="btn-primary btn-update"
                data-name="\${esc(pkg.name)}"
@@ -1517,7 +1538,7 @@ export function getDashboardHtml(
           <td class="col-check">\${pkg.latest !== null
             ? \`<input type="checkbox" class="row-check" data-name="\${esc(pkg.name)}" \${selectedPackages.has(pkg.name) ? 'checked' : ''} title="Select for bulk update" />\`
             : ''}</td>
-          <td class="col-name"><span class="pkg-name-link" data-name="\${esc(pkg.name)}">\${esc(pkg.name)}</span>\${devTag}</td>
+          <td class="col-name"><span class="pkg-name-link" data-name="\${esc(pkg.name)}">\${esc(pkg.name)}</span>\${vulnIcon}\${devTag}</td>
           <td class="col-version">^\${esc(pkg.version.replace(/^[\\^~>=<\\s]+/, ''))}</td>
           <td class="col-latest">\${latestCell}</td>
           <td class="col-date" data-iso="\${pkg.lastUpdated ? esc(pkg.lastUpdated) : ''}"><span class="date-text">\${formatDate(pkg.lastUpdated)}</span></td>
@@ -2014,6 +2035,23 @@ export function getDashboardHtml(
       hideTooltip();
       vscode.postMessage({ command: 'openNpm', packageName: span.dataset.name });
     });
+
+    // ── Vulnerability icon tooltip ─────────────────────────────────────────
+    const VULN_LABELS = {
+      critical: '🔴 Critical vulnerability detected',
+      high:     '🟠 High severity vulnerability detected',
+      moderate: '🟡 Moderate severity vulnerability detected',
+      low:      '🟢 Low severity vulnerability detected',
+    };
+    document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
+      const icon = e.target.closest('.vuln-icon');
+      if (!icon) return;
+      const label = VULN_LABELS[icon.dataset.vuln] || 'Vulnerability detected';
+      showTooltip(label, icon.getBoundingClientRect(), true);
+    }, true);
+    document.getElementById('pkg-tbody').addEventListener('mouseleave', e => {
+      if (e.target.closest('.vuln-icon')) hideTooltip();
+    }, true);
 
     // ── Changelog button delegation ────────────────────────────────────────
     document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {

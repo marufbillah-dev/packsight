@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { parseDependencies } from "../services/dependencyService";
-import { getOutdatedPackages, getPackagesLastUpdated, getPackageSizes, getPackageRepoUrls, getRuntimeVersions } from "../services/npmService";
+import { getOutdatedPackages, getPackagesLastUpdated, getPackageSizes, getPackageRepoUrls, getRuntimeVersions, getVulnerabilities } from "../services/npmService";
 import { scanUsedPackages } from "../services/scanService";
 import { getDashboardHtml } from "./dashboardHtml";
 import { handleWebviewMessage } from "./messageHandler";
@@ -144,13 +144,14 @@ export class DashboardPanel {
         ...devDependencies.map((p) => ({ ...p, isDev: true })),
       ];
 
-      // Fetch outdated, last-updated, sizes, repo URLs, and runtime versions in parallel
-      const [outdatedMap, lastUpdatedMap, sizeMap, repoUrlMap, runtimeVersions] = await Promise.all([
+      // Fetch outdated, last-updated, sizes, repo URLs, runtime versions, and vulnerabilities in parallel
+      const [outdatedMap, lastUpdatedMap, sizeMap, repoUrlMap, runtimeVersions, vulnMap] = await Promise.all([
         getOutdatedPackages(allEntries),
         getPackagesLastUpdated(allEntries),
         getPackageSizes(allEntries),
         getPackageRepoUrls(allEntries),
         getRuntimeVersions(),
+        getVulnerabilities(this.workspaceRoot),
       ]);
 
       data = {
@@ -166,6 +167,7 @@ export class DashboardPanel {
           lastUpdated: lastUpdatedMap.get(entry.name) ?? null,
           size: sizeMap.get(entry.name) ?? null,
           repoUrl: repoUrlMap.get(entry.name) ?? null,
+          vulnSeverity: vulnMap.get(entry.name) ?? null,
         })),
       };
     } catch (err) {
