@@ -90,6 +90,8 @@ export function activate(context: vscode.ExtensionContext): void {
 
   // ── Dashboard ↔ Sidebar data sync ─────────────────────────────────────────
   const dashboardSyncDisposable = dependencyChanged.event(() => {
+    // Refresh sidebar whenever dependencies change (dashboard ops, file watcher, etc.)
+    sidebarProvider.refresh();
     if (DashboardPanel.isOpen()) {
       const panel = DashboardPanel.createOrShow(context, workspaceRoot);
       void panel.loadData(true);
@@ -107,13 +109,18 @@ export function activate(context: vscode.ExtensionContext): void {
     async (arg: { packageName: string; isDev: boolean } | undefined) => {
       if (!arg?.packageName) { return; }
       const { packageName, isDev } = arg;
-      const terminal = vscode.window.createTerminal({ name: 'PackSight', cwd: workspaceRoot });
-      const flag = isDev ? '--save-dev' : '--save';
-      terminal.sendText(`npm uninstall ${flag} ${packageName} ; exit`);
-      terminal.show(true);
-      const d = vscode.window.onDidCloseTerminal(t => {
-        if (t === terminal) { d.dispose(); sidebarProvider.refresh(); }
-      });
+      const cfg = vscode.workspace.getConfiguration('packSight');
+      const flags = cfg.get<string>('uninstallFlags', '--legacy-peer-deps').trim();
+      const flagStr = flags.length > 0 ? ` ${flags}` : '';
+      const saveFlag = isDev ? '--save-dev' : '--save';
+      try {
+        const { runCommand } = await import('./services/npmService');
+        await runCommand(`npm uninstall ${saveFlag} ${packageName}${flagStr}`, workspaceRoot);
+        sidebarProvider.refresh();
+      } catch (err: unknown) {
+        const detail = err instanceof Error ? err.message.split('\n')[0] : String(err);
+        vscode.window.showErrorMessage(`Could not uninstall ${packageName} — ${detail}`);
+      }
     }
   );
 
@@ -122,12 +129,17 @@ export function activate(context: vscode.ExtensionContext): void {
     async (arg: { packageName: string } | undefined) => {
       if (!arg?.packageName) { return; }
       const { packageName } = arg;
-      const terminal = vscode.window.createTerminal({ name: 'PackSight', cwd: workspaceRoot });
-      terminal.sendText(`npm install ${packageName}@latest ; exit`);
-      terminal.show(true);
-      const d = vscode.window.onDidCloseTerminal(t => {
-        if (t === terminal) { d.dispose(); sidebarProvider.refresh(); }
-      });
+      const cfg = vscode.workspace.getConfiguration('packSight');
+      const flags = cfg.get<string>('updateFlags', '--legacy-peer-deps').trim();
+      const flagStr = flags.length > 0 ? ` ${flags}` : '';
+      try {
+        const { runCommand } = await import('./services/npmService');
+        await runCommand(`npm install ${packageName}@latest${flagStr}`, workspaceRoot);
+        sidebarProvider.refresh();
+      } catch (err: unknown) {
+        const detail = err instanceof Error ? err.message.split('\n')[0] : String(err);
+        vscode.window.showErrorMessage(`Could not update ${packageName} — ${detail}`);
+      }
     }
   );
 

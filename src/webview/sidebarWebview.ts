@@ -198,7 +198,7 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
           ${badges}
         </div>
         <div class="pkg-actions">
-          ${isOutdated ? `<button class="act-btn act-update" title="Update to ${p.latestVersion}" onclick="update('${name}')"><span class="codicon codicon-arrow-up"></span></button>` : ''}
+          ${isOutdated ? `<button class="act-btn act-update" title="Update to ${p.latestVersion}" onclick="update('${name}','${p.latestVersion}')"><span class="codicon codicon-arrow-up"></span></button>` : ''}
           <button class="act-btn act-copy" title="Copy name" onclick="copyName('${name}')"><span class="codicon codicon-copy"></span></button>
           <button class="act-btn act-remove" title="Uninstall" onclick="uninstall('${name}',${p.isDev})"><span class="codicon codicon-trash"></span></button>
         </div>
@@ -259,19 +259,19 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
     }
 
     /* ── Toggle button ── */
-    .toggle-wrap { padding: 8px 10px 6px; flex-shrink: 0; }
+    .toggle-wrap { padding: 9px 11px 7px; flex-shrink: 0; }
     .toggle-btn {
       width: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 6px 10px;
+      padding: 7px 11px;
       background: var(--vscode-button-background);
       color: var(--vscode-button-foreground);
       border: none;
       border-radius: 4px;
-      font-size: 0.85em;
+      font-size: 0.94em;
       font-family: var(--vscode-font-family);
       font-weight: 600;
       cursor: pointer;
@@ -293,11 +293,11 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 5px 10px 4px;
+      padding: 6px 11px 5px;
       flex-shrink: 0;
     }
     .section-title {
-      font-size: 0.72em;
+      font-size: 0.79em;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -334,7 +334,7 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       gap: 4px;
-      padding: 4px 10px;
+      padding: 5px 11px;
       cursor: pointer;
       user-select: none;
       background: var(--vscode-sideBarSectionHeader-background, transparent);
@@ -342,25 +342,24 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       transition: background 100ms;
     }
     .group-header:hover { background: var(--vscode-list-hoverBackground); }
-    .group-chevron { font-size: 12px; transition: transform 150ms; flex-shrink: 0; }
+    .group-chevron { font-size: 13px; transition: transform 150ms; flex-shrink: 0; }
     .group-chevron.collapsed { transform: rotate(-90deg); }
-    .group-label { font-size: 0.82em; font-weight: 600; flex: 1; }
+    .group-label { font-size: 0.90em; font-weight: 600; flex: 1; }
     .group-count {
-      font-size: 0.72em;
-      color: var(--vscode-descriptionForeground);
+      font-size: 0.79em;
       background: var(--vscode-badge-background);
       color: var(--vscode-badge-foreground);
       border-radius: 10px;
-      padding: 0 5px;
-      min-width: 18px;
+      padding: 0 6px;
+      min-width: 20px;
       text-align: center;
     }
     .group-badge {
-      font-size: 0.68em;
+      font-size: 0.75em;
       color: var(--vscode-editorWarning-foreground, #f59e0b);
       background: color-mix(in srgb, var(--vscode-editorWarning-foreground, #f59e0b) 12%, transparent);
       border-radius: 10px;
-      padding: 0 5px;
+      padding: 0 6px;
     }
     .group-body { }
     .group-body.collapsed { display: none; }
@@ -370,25 +369,25 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       display: flex;
       align-items: center;
       gap: 6px;
-      padding: 3px 10px 3px 22px;
+      padding: 4px 11px 4px 24px;
       cursor: default;
       transition: background 80ms;
-      min-height: 26px;
+      min-height: 29px;
     }
     .pkg-row:hover { background: var(--vscode-list-hoverBackground); }
     .pkg-row:hover .pkg-actions { opacity: 1; }
-    .pkg-icon { font-size: 13px; flex-shrink: 0; }
+    .pkg-icon { font-size: 14px; flex-shrink: 0; }
     .icon-ok       { color: var(--vscode-testing-iconPassed, #4ade80); }
     .icon-unused   { color: var(--vscode-editorWarning-foreground, #f59e0b); }
     .icon-outdated { color: var(--vscode-charts-blue, #3b82f6); }
     .icon-crit     { color: var(--vscode-errorForeground, #f87171); }
     .pkg-info { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 5px; flex-wrap: wrap; }
-    .pkg-name { font-size: 0.85em; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .pkg-ver  { font-size: 0.75em; color: var(--vscode-descriptionForeground); font-family: var(--vscode-editor-font-family, monospace); flex-shrink: 0; }
+    .pkg-name { font-size: 0.94em; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .pkg-ver  { font-size: 0.82em; color: var(--vscode-descriptionForeground); font-family: var(--vscode-editor-font-family, monospace); flex-shrink: 0; }
     .badge {
-      font-size: 0.65em;
+      font-size: 0.72em;
       font-weight: 600;
-      padding: 0 4px;
+      padding: 0 5px;
       border-radius: 3px;
       flex-shrink: 0;
     }
@@ -406,28 +405,27 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       background: transparent;
       border: none;
       cursor: pointer;
-      padding: 2px 3px;
+      padding: 2px 4px;
       border-radius: 3px;
       display: flex;
       align-items: center;
       color: var(--vscode-icon-foreground, var(--vscode-foreground));
-      font-size: 12px;
+      font-size: 13px;
       transition: background 80ms, color 80ms;
     }
     .act-btn:hover { background: var(--vscode-toolbar-hoverBackground); }
     .act-update:hover { color: var(--vscode-charts-blue, #3b82f6); }
     .act-remove:hover { color: var(--vscode-errorForeground, #f87171); }
 
-    /* ── State messages ── */
     .state-msg {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 16px 14px;
-      font-size: 0.83em;
+      padding: 18px 15px;
+      font-size: 0.91em;
       color: var(--vscode-descriptionForeground);
     }
-    .state-icon { font-size: 15px; }
+    .state-icon { font-size: 16px; }
 
     /* ── Quick links ── */
     .links-section { flex-shrink: 0; }
@@ -435,12 +433,12 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       width: 100%;
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 4px 12px;
+      gap: 8px;
+      padding: 5px 13px;
       background: transparent;
       color: var(--vscode-foreground);
       border: none;
-      font-size: 0.83em;
+      font-size: 0.91em;
       font-family: var(--vscode-font-family);
       cursor: pointer;
       text-align: left;
@@ -448,13 +446,13 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       border-radius: 0;
     }
     .link-btn:hover { background: var(--vscode-list-hoverBackground); }
-    .link-btn .codicon { font-size: 13px; flex-shrink: 0; color: var(--vscode-icon-foreground); }
+    .link-btn .codicon { font-size: 14px; flex-shrink: 0; color: var(--vscode-icon-foreground); }
 
     /* ── Author ── */
     .author {
       text-align: center;
-      padding: 6px 10px 8px;
-      font-size: 0.74em;
+      padding: 7px 10px 9px;
+      font-size: 0.81em;
       color: var(--vscode-descriptionForeground);
     }
     .author-link {
@@ -468,9 +466,70 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       font-weight: 600;
     }
     .author-link:hover { text-decoration: underline; }
+
+    /* ── Confirm dialog ── */
+    .confirm-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .confirm-overlay.visible { display: flex; }
+    .confirm-box {
+      background: var(--vscode-editorWidget-background);
+      border: 1px solid var(--vscode-panel-border);
+      border-radius: 6px;
+      padding: 18px 20px 14px;
+      max-width: 260px;
+      width: 90%;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+    }
+    .confirm-title {
+      font-size: 0.92em;
+      font-weight: 700;
+      margin-bottom: 7px;
+      color: var(--vscode-foreground);
+    }
+    .confirm-body {
+      font-size: 0.82em;
+      color: var(--vscode-descriptionForeground);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+    .confirm-actions { display: flex; gap: 6px; justify-content: flex-end; }
+    .confirm-btn {
+      padding: 5px 12px;
+      border: none;
+      border-radius: 3px;
+      font-size: 0.82em;
+      font-family: var(--vscode-font-family);
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .confirm-cancel { background: var(--vscode-button-secondaryBackground, #3a3d41); color: var(--vscode-button-secondaryForeground, #ccc); }
+    .confirm-cancel:hover { background: var(--vscode-button-secondaryHoverBackground, #45494e); }
+    .confirm-ok-primary { background: var(--vscode-button-background); color: var(--vscode-button-foreground); }
+    .confirm-ok-primary:hover { background: var(--vscode-button-hoverBackground); }
+    .confirm-ok-danger { background: var(--vscode-errorForeground, #f87171); color: #fff; }
+    .confirm-ok-danger:hover { opacity: 0.85; }
   </style>
 </head>
 <body>
+
+  <!-- Confirm dialog -->
+  <div class="confirm-overlay" id="confirm-overlay">
+    <div class="confirm-box">
+      <div class="confirm-title" id="confirm-title"></div>
+      <div class="confirm-body" id="confirm-body"></div>
+      <div class="confirm-actions">
+        <button class="confirm-btn confirm-cancel" onclick="closeConfirm()">Cancel</button>
+        <button class="confirm-btn" id="confirm-ok"></button>
+      </div>
+    </div>
+  </div>
 
   <!-- Toggle button -->
   <div class="toggle-wrap">${toggleBtn}</div>
@@ -501,9 +560,51 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
     const vscode = acquireVsCodeApi();
     function post(cmd, extra) { vscode.postMessage({ command: cmd, ...extra }); }
     function openUrl(url)     { post('openUrl', { url }); }
-    function update(name)     { post('update', { packageName: name }); }
-    function uninstall(name, isDev) { post('uninstall', { packageName: name, isDev }); }
     function copyName(name)   { post('copyName', { packageName: name }); }
+
+    // ── Confirm dialog ──────────────────────────────────────────────────────
+    let pendingAction = null;
+    function showConfirm(title, body, okLabel, okCls, onOk) {
+      document.getElementById('confirm-title').textContent = title;
+      document.getElementById('confirm-body').textContent  = body;
+      const ok = document.getElementById('confirm-ok');
+      ok.textContent = okLabel;
+      ok.className   = 'confirm-btn ' + okCls;
+      pendingAction  = onOk;
+      document.getElementById('confirm-overlay').classList.add('visible');
+      ok.focus();
+    }
+    function closeConfirm() {
+      document.getElementById('confirm-overlay').classList.remove('visible');
+      pendingAction = null;
+    }
+    document.getElementById('confirm-ok').addEventListener('click', () => {
+      if (pendingAction) { pendingAction(); }
+      closeConfirm();
+    });
+    document.getElementById('confirm-overlay').addEventListener('click', e => {
+      if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeConfirm();
+    });
+
+    function update(name, latest) {
+      showConfirm(
+        'Update Package',
+        'Update "' + name + '" to the latest version' + (latest ? ' (' + latest + ')' : '') + '?',
+        'Update', 'confirm-ok-primary',
+        () => post('update', { packageName: name })
+      );
+    }
+    function uninstall(name, isDev) {
+      showConfirm(
+        'Uninstall Package',
+        'Are you sure you want to uninstall "' + name + '"? This cannot be undone.',
+        'Uninstall', 'confirm-ok-danger',
+        () => post('uninstall', { packageName: name, isDev })
+      );
+    }
 
     function toggleGroup(id) {
       const body = document.getElementById('grp-' + id);
