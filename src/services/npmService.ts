@@ -36,7 +36,9 @@ interface NpmViewRaw {
   version?: string;
   time?: Record<string, string>;
   dist?: { unpackedSize?: number };
+  'dist.unpackedSize'?: number;
   repository?: { url?: string } | string;
+  'repository.url'?: string;
 }
 
 /**
@@ -70,19 +72,15 @@ function fetchPackageRegistryData(
             lastUpdated = raw.time[clean] ?? null;
           }
 
-          // Unpacked size
-          const size = (raw.dist?.unpackedSize && raw.dist.unpackedSize > 0)
-            ? raw.dist.unpackedSize
-            : null;
+          // Unpacked size — npm returns as flat key 'dist.unpackedSize', not nested
+          const rawSize = raw['dist.unpackedSize'] ?? raw.dist?.unpackedSize;
+          const size = (rawSize && rawSize > 0) ? rawSize : null;
 
-          // GitHub releases URL
-          let repoUrl: string | null = null;
-          if (raw.repository) {
-            const rawUrl = typeof raw.repository === 'string'
-              ? raw.repository
-              : (raw.repository.url ?? '');
-            repoUrl = normaliseToReleasesUrl(rawUrl);
-          }
+          // GitHub releases URL — npm returns as flat key 'repository.url' or nested
+          const rawRepoUrl = raw['repository.url']
+            ?? (typeof raw.repository === 'string' ? raw.repository : raw.repository?.url)
+            ?? '';
+          const repoUrl = normaliseToReleasesUrl(rawRepoUrl);
 
           resolve({ latest, lastUpdated, size, repoUrl });
         } catch {
