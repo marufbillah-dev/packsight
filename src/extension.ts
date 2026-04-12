@@ -47,7 +47,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const updateTitle = (): void => {
     const total = treeProvider.getTotalCount();
     // treeView.title replaces the view's "name" entirely — no prepending occurs.
-    treeView.title = total > 0 ? `PackSight (${total})` : 'PackSight';
+    treeView.title = total > 0 ? `Packages (${total})` : 'Packages';
   };
 
   // Re-run title update whenever the tree data changes

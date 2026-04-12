@@ -34,6 +34,9 @@ export class DependencyTreeProvider
   /** True while the background scan is running — shows spinner */
   private scanning = false;
 
+  /** True when this is the very first load (no data yet) */
+  private initialLoad = true;
+
   /** True when package.json was missing or unreadable on last load */
   private hasError = false;
 
@@ -108,7 +111,11 @@ export class DependencyTreeProvider
     }
 
     this.scanning = true;
-    this._onDidChangeTreeData.fire(); // triggers spinner
+    // Only show the spinner on the very first load when there's no data yet.
+    // On subsequent refreshes, keep showing the existing data silently.
+    if (this.initialLoad) {
+      this._onDidChangeTreeData.fire();
+    }
 
     setImmediate(() => {
       void (async () => {
@@ -125,6 +132,7 @@ export class DependencyTreeProvider
           this.outdatedMap  = new Map();
         } finally {
           this.scanning = false;
+          this.initialLoad = false;
           this._onDidChangeTreeData.fire();
           dependencyChanged.fire();
         }
