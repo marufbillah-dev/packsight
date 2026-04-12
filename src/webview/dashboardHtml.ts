@@ -1148,7 +1148,7 @@ export function getDashboardHtml(
           <button class="scale-btn" id="btn-scale-up" aria-label="Increase UI scale">+</button>
         </div>
         <button class="btn-secondary" id="btn-browse">
-          <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.5 1a.5.5 0 0 1 .5.5v1h1.5a.5.5 0 0 1 0 1H12v8.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 2 11.5V3.5h-.5a.5.5 0 0 1 0-1H3v-1a.5.5 0 0 1 1 0v1h7v-1a.5.5 0 0 1 .5-.5zM3 3.5v8a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-8H3zm2 2a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm-2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z" fill="currentColor"/></svg>
+          <svg class="icon" viewBox="0 0 512 448" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path fill-rule="evenodd" d="M192 0v160H80L256 336 432 160H320V0H192zM0 288v160h512V288H384L256 416 128 288H0zm416 32h64v64h-64v-64z"/></svg>
           Browse &amp; Install
         </button>
         <button class="btn-secondary" id="btn-refresh" title="Refresh dependency data">↺ Refresh</button>
@@ -1265,8 +1265,8 @@ export function getDashboardHtml(
     <div id="browse-panel">
       <div class="browse-header">
         <h2 id="browse-panel-title">
-          <svg class="icon" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M11.5 1a.5.5 0 0 1 .5.5v1h1.5a.5.5 0 0 1 0 1H12v8.5a1.5 1.5 0 0 1-1.5 1.5h-7A1.5 1.5 0 0 1 2 11.5V3.5h-.5a.5.5 0 0 1 0-1H3v-1a.5.5 0 0 1 1 0v1h7v-1a.5.5 0 0 1 .5-.5zM3 3.5v8a.5.5 0 0 0 .5.5h7a.5.5 0 0 0 .5-.5v-8H3zm2 2a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm4 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm-2 0a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5z" fill="currentColor"/></svg>
-          Browse &amp; Install
+          <svg class="icon" viewBox="0 0 512 448" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path fill-rule="evenodd" d="M192 0v160H80L256 336 432 160H320V0H192zM0 288v160h512V288H384L256 416 128 288H0zm416 32h64v64h-64v-64z"/></svg>
+          Browse &amp; Install Packages
         </h2>
         <button id="browse-close" aria-label="Close browse panel">
           <span class="codicon codicon-close"></span>
@@ -1761,6 +1761,19 @@ export function getDashboardHtml(
     });
 
     // Install button delegation
+    document.getElementById('browse-results').addEventListener('mouseenter', e => {
+      const btn = e.target.closest('.browse-install-btn');
+      if (!btn) return;
+      const isDev = btn.dataset.dev === 'true';
+      const cmd = isDev
+        ? 'npm install --save-dev ' + btn.dataset.name
+        : 'npm install ' + btn.dataset.name;
+      showTooltip(cmd, btn.getBoundingClientRect(), true);
+    }, true);
+    document.getElementById('browse-results').addEventListener('mouseleave', e => {
+      if (e.target.closest('.browse-install-btn')) hideTooltip();
+    }, true);
+
     document.getElementById('browse-results').addEventListener('click', e => {
       const btn = e.target.closest('.browse-install-btn');
       if (btn) {
