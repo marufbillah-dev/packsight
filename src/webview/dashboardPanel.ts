@@ -18,6 +18,8 @@ import {
  */
 export class DashboardPanel {
   private static instance: DashboardPanel | undefined;
+  /** Cached payload from the last successful loadData — survives panel dispose/recreate */
+  private static cachedData: DashboardData | undefined;
 
   private readonly panel: vscode.WebviewPanel;
   private readonly workspaceRoot: string;
@@ -42,7 +44,7 @@ export class DashboardPanel {
             raw,
             this.panel.webview,
             this.workspaceRoot,
-            () => this.loadData(),
+            () => this.loadData(true), // always bypass cache for user-triggered operations
           );
         }
       },
@@ -127,10 +129,24 @@ export class DashboardPanel {
   }
 
   /**
-   * Fetches fresh data from the existing services and sends it to the webview.
+   * Serves cached data immediately (if available) so the UI renders
+   * without a loading screen, then fetches fresh data in the background
+   * and posts it again once ready.
+   *
    * Called on initial load, after npm operations, and on manual refresh.
+   * For manual refresh the cache is intentionally bypassed so the user
+   * always gets up-to-date data when they explicitly ask for it.
    */
-  public async loadData(): Promise<void> {
+  public async loadData(bypassCache = false): Promise<void> {
+    // Serve stale-while-revalidate: push cached data instantly so the
+    // panel renders immediately, then fetch fresh data behind the scenes.
+    if (!bypassCache && DashboardPanel.cachedData) {
+      void this.panel.webview.postMessage({
+        command: "loadData",
+        payload: DashboardPanel.cachedData,
+      } satisfies ExtensionMessage);
+    }
+
     let data: DashboardData;
 
     try {
@@ -174,8 +190,12 @@ export class DashboardPanel {
       data = { workspaceRoot: this.workspaceRoot, packages: [], nodeVersion: null, npmVersion: null };
     }
 
-    const msg: ExtensionMessage = { command: "loadData", payload: data };
-    void this.panel.webview.postMessage(msg);
+    // Update the cache and push fresh data to the webview
+    DashboardPanel.cachedData = data;
+    void this.panel.webview.postMessage({
+      command: "loadData",
+      payload: data,
+    } satisfies ExtensionMessage);
   }
 
   /**

@@ -71,10 +71,10 @@ export function activate(context: vscode.ExtensionContext): void {
     debounceTimer = setTimeout(() => {
       debounceTimer = undefined;
       treeProvider.refresh();
-      // If the dashboard is open, reload its data too
+      // If the dashboard is open, reload its data too (bypass cache — file changed)
       if (DashboardPanel.isOpen()) {
         const panel = DashboardPanel.createOrShow(context, workspaceRoot);
-        void panel.loadData();
+        void panel.loadData(true);
       }
     }, WATCHER_DEBOUNCE_MS);
   };
@@ -89,7 +89,7 @@ export function activate(context: vscode.ExtensionContext): void {
   const dashboardSyncDisposable = dependencyChanged.event(() => {
     if (DashboardPanel.isOpen()) {
       const panel = DashboardPanel.createOrShow(context, workspaceRoot);
-      void panel.loadData();
+      void panel.loadData(true); // bypass cache — dependencies actually changed
     }
   });
 
