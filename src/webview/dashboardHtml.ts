@@ -25,7 +25,14 @@ export function getDashboardHtml(
     vscode.Uri.joinPath(extensionUri, "resources", "icon.svg"),
   );
   const codiconCssUri = webview.asWebviewUri(
-    vscode.Uri.joinPath(extensionUri, "node_modules", "@vscode", "codicons", "dist", "codicon.css"),
+    vscode.Uri.joinPath(
+      extensionUri,
+      "node_modules",
+      "@vscode",
+      "codicons",
+      "dist",
+      "codicon.css",
+    ),
   );
 
   return /* html */ `<!DOCTYPE html>
@@ -1347,7 +1354,7 @@ export function getDashboardHtml(
         secEl.className  = 'stat-value has-vulns';
         secCard.classList.remove('secure');
       } else {
-        secEl.textContent = '✓';
+        secEl.textContent = '✓ All Secured';
         secEl.className   = 'stat-value is-secure';
         secCard.classList.add('secure');
       }
@@ -2073,7 +2080,7 @@ export function getDashboardHtml(
       high:     '🟠 High severity vulnerability detected',
       moderate: '🟡 Moderate severity vulnerability detected',
       low:      '🟢 Low severity vulnerability detected',
-      secure:   '✅ No known vulnerabilities',
+      secure:   '✓ Secure package',
     };
     document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
       const icon = e.target.closest('.vuln-icon');
