@@ -2,7 +2,7 @@
   "name": "packsight",
   "displayName": "PackSight – Visual Package Manager",
   "description": "Visually explore, manage, and audit dependencies in VS Code",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "publisher": "bytronlabs",
   "license": "MIT",
   "repository": {

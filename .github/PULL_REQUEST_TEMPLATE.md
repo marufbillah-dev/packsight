@@ -26,10 +26,10 @@ Describe how you tested the changes:
 
 - [ ] Tested manually in Extension Development Host (F5)
 - [ ] 
-> packsight@0.1.0 compile
+> packsight@1.0.0 compile
 > tsc -p ./ passes with no errors
 - [ ] 
-> packsight@0.1.0 lint
+> packsight@1.0.0 lint
 > eslint src --ext ts
 
 

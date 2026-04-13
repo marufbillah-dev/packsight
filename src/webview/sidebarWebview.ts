@@ -761,6 +761,9 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
       'The <em>Browse &amp; Install</em> button lets you search and install any npm package',
       'Unused packages are detected by scanning your source imports',
       'The Security card shows total vulnerabilities found by <em>npm audit</em>',
+      'Click <em>↩ History</em> in the dashboard header to undo any update or uninstall',
+      'Revert history persists across dashboard close and reopen — nothing is lost',
+      'Each entry in Revert History shows the exact version that will be restored',
     ];
 
     const tipEl = document.getElementById('tip-text');

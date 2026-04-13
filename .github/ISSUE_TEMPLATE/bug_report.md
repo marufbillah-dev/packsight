@@ -30,7 +30,7 @@ What actually happened.
 |-------|-------|
 | OS | e.g. Windows 11 |
 | VS Code version | e.g. 1.90.0 |
-| PackSight version | e.g. 0.1.0 |
+| PackSight version | e.g. 1.0.0 |
 | Node.js version | e.g. 20.11.0 |
 | npm version | e.g. 10.2.4 |
 
