@@ -16,6 +16,7 @@
 - [The Sidebar](#the-sidebar)
 - [The Dashboard](#the-dashboard)
 - [Browse & Install Packages](#browse--install-packages)
+- [Revert History](#revert-history)
 - [Security & Vulnerability Detection](#security--vulnerability-detection)
 - [Keyboard Shortcuts & Quick Access](#keyboard-shortcuts--quick-access)
 - [Configuration](#configuration)
@@ -56,6 +57,7 @@ It works automatically when you open any project that contains a `package.json`.
 - **Node.js & npm version badges** showing your current runtime versions
 - **Changelog button** — opens the package's GitHub releases page directly
 - **Package name link** — click any package name to open it on npmjs.com
+- **↩ Revert History** — a persistent panel listing every update and uninstall with one-click undo
 
 ### Security
 
@@ -120,6 +122,8 @@ Hover over any package row to reveal three action buttons:
 | Copy | Copy the package name to clipboard |
 | Trash | Uninstall the package (with confirmation) |
 
+After an update or uninstall from the sidebar, a VS Code notification appears with an **Undo** button. Click it within the notification timeout to revert the action.
+
 ### Refreshing
 
 Click the **↺ refresh icon** in the Packages section header to manually re-scan and re-fetch registry data.
@@ -174,6 +178,30 @@ Adjust the dashboard zoom level using:
 - **Ctrl + scroll wheel** anywhere on the dashboard
 
 Your preferred scale is saved and restored automatically.
+
+---
+
+## Revert History
+
+PackSight keeps a persistent history of every update and uninstall you perform in the dashboard, so you can undo any action at any time.
+
+### How it works
+
+- Click the **↩ History** button in the dashboard header to open the Revert History panel
+- A red badge on the button shows how many revertable actions are available
+- Each entry shows the package name, what was done (Uninstalled / Updated), the version to restore, and a timestamp
+- Click **↩ Revert** on any entry to undo that specific action
+- History is **persisted across panel close and reopen** — switching to Tree View and back does not clear it
+- Click **Clear History** at the bottom of the panel to wipe all entries
+
+### What gets reverted
+
+| Action | Revert behaviour |
+|--------|-----------------|
+| Uninstall | Re-installs the exact version that was removed (`npm install pkg@x.y.z`) |
+| Update | Downgrades back to the version before the update (`npm install pkg@x.y.z`) |
+
+> History is stored in memory for the current VS Code session. It is cleared when VS Code is closed or the extension is reloaded.
 
 ---
 
