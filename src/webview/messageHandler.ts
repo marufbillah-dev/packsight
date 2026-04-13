@@ -80,7 +80,7 @@ export async function handleWebviewMessage(
     }
 
     case 'bulkUpdate': {
-      const { packageNames } = message;
+      const { packageNames, oldVersions } = message;
       const flags = vscode.workspace
         .getConfiguration('packSight')
         .get<string>('updateFlags', '--legacy-peer-deps')
@@ -94,6 +94,21 @@ export async function handleWebviewMessage(
         try {
           await runCommand(`npm install ${packageName}@latest${flagStr}`, workspaceRoot);
           succeeded.add(packageName);
+          // Optimistic update per-package as each one completes
+          onOptimistic(pkgs => pkgs.map(p =>
+            p.name === packageName ? { ...p, version: p.latest ?? p.version, latest: null } : p
+          ));
+          // Add revert entry for each succeeded package
+          const oldVer = oldVersions?.[packageName]?.trim();
+          if (oldVer) {
+            const revertInfo: RevertInfo = {
+              packageName,
+              version: oldVer,
+              isDev: false, // bulk update doesn't distinguish; revert uses --save
+              kind: 'update',
+            };
+            post({ command: 'operationSuccess', message: `Updated ${packageName} to latest`, revertInfo });
+          }
         } catch {
           failed++;
         }
@@ -104,11 +119,6 @@ export async function handleWebviewMessage(
       } else {
         post({ command: 'operationError', message: `${packageNames.length - failed} updated, ${failed} failed` });
       }
-      onOptimistic(pkgs => pkgs.map(p =>
-        succeeded.has(p.name)
-          ? { ...p, version: p.latest ?? p.version, latest: null }
-          : p
-      ));
       void onRefresh();
       break;
     }
@@ -169,10 +179,11 @@ export async function handleWebviewMessage(
         const saveFlag = isDev ? '--save-dev' : '--save';
         await runCommand(`npm install ${saveFlag} ${packageName}${flagStr}`, workspaceRoot);
         post({ command: 'operationSuccess', message: `Installed ${packageName}` });
+        // Optimistic: add placeholder to dashboard and sidebar immediately
         onOptimistic(pkgs => {
           if (pkgs.some(p => p.name === packageName)) { return pkgs; }
           return [...pkgs, {
-            name: packageName, version: 'latest', latest: null,
+            name: packageName, version: 'installing…', latest: null,
             isUnused: false, isDev, lastUpdated: null, size: null,
             repoUrl: null, vulnSeverity: null,
           }];

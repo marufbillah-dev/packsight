@@ -122,7 +122,9 @@ export function activate(context: vscode.ExtensionContext): void {
       const saveFlag = isDev ? '--save-dev' : '--save';
       try {
         await runCommand(`npm uninstall ${saveFlag} ${packageName}${flagStr}`, workspaceRoot);
-        sidebarProvider.refresh();
+        // Instant UI update — remove from sidebar immediately
+        sidebarProvider.applyOptimisticUpdate(pkgs => pkgs.filter(p => p.name !== packageName));
+        void sidebarProvider.refresh();
         // Offer Undo via native VS Code notification
         if (version) {
           const choice = await vscode.window.showInformationMessage(
@@ -131,7 +133,7 @@ export function activate(context: vscode.ExtensionContext): void {
           );
           if (choice === 'Undo') {
             await runCommand(`npm install ${saveFlag} ${packageName}@${version}${flagStr}`, workspaceRoot);
-            sidebarProvider.refresh();
+            void sidebarProvider.refresh();
             vscode.window.showInformationMessage(`Reverted: reinstalled ${packageName}@${version}`);
           }
         }
@@ -152,7 +154,11 @@ export function activate(context: vscode.ExtensionContext): void {
       const flagStr = flags.length > 0 ? ` ${flags}` : '';
       try {
         await runCommand(`npm install ${packageName}@latest${flagStr}`, workspaceRoot);
-        sidebarProvider.refresh();
+        // Instant UI update — clear the outdated indicator immediately
+        sidebarProvider.applyOptimisticUpdate(pkgs => pkgs.map(p =>
+          p.name === packageName ? { ...p, latestVersion: null } : p
+        ));
+        void sidebarProvider.refresh();
         // Offer Undo via native VS Code notification
         if (oldVersion) {
           const saveFlag = isDev ? '--save-dev' : '--save';
@@ -162,7 +168,7 @@ export function activate(context: vscode.ExtensionContext): void {
           );
           if (choice === 'Undo') {
             await runCommand(`npm install ${saveFlag} ${packageName}@${oldVersion}${flagStr}`, workspaceRoot);
-            sidebarProvider.refresh();
+            void sidebarProvider.refresh();
             vscode.window.showInformationMessage(`Reverted: downgraded ${packageName} to ${oldVersion}`);
           }
         }

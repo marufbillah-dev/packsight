@@ -105,6 +105,12 @@ export class SidebarWebviewProvider implements vscode.WebviewViewProvider {
     this.loadAndScan();
   }
 
+  /** Instantly mutates the in-memory package list and re-renders without a full scan. */
+  public applyOptimisticUpdate(mutate: (pkgs: SidebarPackage[]) => SidebarPackage[]): void {
+    this.packages = mutate(this.packages);
+    this.render();
+  }
+
   public getTotalCount(): number {
     return this.packages.length;
   }

@@ -2204,7 +2204,13 @@ export function getDashboardHtml(
         () => {
           selectedPackages.clear();
           updateBulkBar();
-          vscode.postMessage({ command: 'bulkUpdate', packageNames: names });
+          // Build oldVersions map so the handler can create revert entries
+          const oldVersions = {};
+          names.forEach(n => {
+            const pkg = allPackages.find(p => p.name === n);
+            if (pkg) { oldVersions[n] = pkg.version.replace(/^[^\d]+/, '') || pkg.version; }
+          });
+          vscode.postMessage({ command: 'bulkUpdate', packageNames: names, oldVersions });
         },
         null,
         bulkItems
