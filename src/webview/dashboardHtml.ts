@@ -1064,8 +1064,10 @@ export function getDashboardHtml(
     }
     .btn-changelog-wrap {
       display: inline-flex;
+      gap: 2px;
     }
-    .btn-changelog {
+    .btn-changelog,
+    .btn-vuln-resolve {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -1073,7 +1075,6 @@ export function getDashboardHtml(
       height: 32px;
       padding: 0;
       background: transparent;
-      color: var(--vscode-descriptionForeground);
       border: 1px solid transparent;
       border-radius: var(--radius-sm);
       font-size: 18px;
@@ -1084,7 +1085,10 @@ export function getDashboardHtml(
                   border-color var(--transition-fast);
       cursor: pointer;
     }
-    tr:hover .btn-changelog {
+    .btn-changelog { color: var(--vscode-descriptionForeground); }
+    .btn-vuln-resolve { color: var(--vscode-descriptionForeground); }
+    tr:hover .btn-changelog,
+    tr:hover .btn-vuln-resolve {
       opacity: 1;
       visibility: visible;
     }
@@ -1092,6 +1096,11 @@ export function getDashboardHtml(
       background: color-mix(in srgb, var(--accent-blue) 12%, transparent);
       color: var(--accent-blue);
       border-color: color-mix(in srgb, var(--accent-blue) 28%, transparent);
+    }
+    .btn-vuln-resolve:hover {
+      background: color-mix(in srgb, var(--accent-red) 12%, transparent);
+      color: var(--accent-red);
+      border-color: color-mix(in srgb, var(--accent-red) 28%, transparent);
     }
     /* Custom tooltip — rendered via JS into a fixed-position singleton
        so it escapes overflow:auto on .table-wrap */
@@ -1781,9 +1790,18 @@ export function getDashboardHtml(
               data-dev="\${pkg.isDev}"
               title="Uninstall \${esc(pkg.name)}">Uninstall</button>
           </td>
-          <td class="col-changelog">\${pkg.repoUrl
-            ? \`<span class="btn-changelog-wrap" data-tooltip="View Releases on GitHub"><button class="btn-changelog codicon codicon-book" data-url="\${esc(pkg.repoUrl)}" aria-label="View releases for \${esc(pkg.name)} on GitHub"></button></span>\`
-            : ''}</td>
+          <td class="col-changelog">
+            <span class="btn-changelog-wrap"
+              data-tooltip-resolve="View advisories for \${esc(pkg.name)}"
+              data-tooltip-changelog="View Releases on GitHub">
+              \${pkg.vulnSeverity
+                ? \`<button class="btn-vuln-resolve codicon codicon-shield" data-url="https://www.npmjs.com/package/\${esc(pkg.name)}?activeTab=advisories" aria-label="View advisories for \${esc(pkg.name)}"></button>\`
+                : ''}
+              \${pkg.repoUrl
+                ? \`<button class="btn-changelog codicon codicon-book" data-url="\${esc(pkg.repoUrl)}" aria-label="View releases for \${esc(pkg.name)} on GitHub"></button>\`
+                : ''}
+            </span>
+          </td>
         </tr>\`;
       }).join('');
       updateBulkBar();
@@ -2420,7 +2438,7 @@ export function getDashboardHtml(
     document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
       const btn = e.target.closest('.btn-changelog');
       if (!btn) return;
-      const text = btn.closest('.btn-changelog-wrap').dataset.tooltip;
+      const text = btn.closest('.btn-changelog-wrap').dataset.tooltipChangelog || 'View Releases on GitHub';
       showTooltip(text, btn.getBoundingClientRect(), true);
     }, true);
 
@@ -2434,6 +2452,27 @@ export function getDashboardHtml(
       hideTooltip();
       vscode.postMessage({ command: 'openChangelog', url: target.dataset.url });
     });
+
+    // ── Vulnerability resolve button delegation ────────────────────────────
+    document.getElementById('pkg-tbody').addEventListener('mouseenter', e => {
+      const btn = e.target.closest('.btn-vuln-resolve');
+      if (!btn) return;
+      const text = btn.closest('.btn-changelog-wrap').dataset.tooltipResolve || 'View advisories on npmjs.com';
+      showTooltip(text, btn.getBoundingClientRect(), true);
+    }, true);
+
+    document.getElementById('pkg-tbody').addEventListener('mouseleave', e => {
+      if (e.target.closest('.btn-vuln-resolve')) hideTooltip();
+    }, true);
+
+    document.getElementById('pkg-tbody').addEventListener('click', e => {
+      const btn = e.target.closest('.btn-vuln-resolve');
+      if (!btn) return;
+      hideTooltip();
+      vscode.postMessage({ command: 'openChangelog', url: btn.dataset.url });
+    });
+      if (e.target.closest('.btn-changelog')) hideTooltip();
+    }, true);
 
     // ── Runtime badge tooltips ─────────────────────────────────────────────
     document.getElementById('badge-node').addEventListener('mouseenter', e => {
