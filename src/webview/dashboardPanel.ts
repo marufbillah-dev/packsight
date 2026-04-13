@@ -221,9 +221,10 @@ export class DashboardPanel {
         revertHistory: DashboardPanel.cachedData?.revertHistory,
       };
 
-      // ── Phase 1: render immediately with basic data (no registry calls) ──
-      // Only send if we have no cache — avoids a redundant re-render
-      if (!DashboardPanel.cachedData || bypassCache) {
+      // Phase 1: only on very first open (no cache) — skip after operations
+      // to avoid flashing stale nulls over existing full data.
+      const isFirstLoad = !DashboardPanel.cachedData;
+      if (isFirstLoad) {
         post({
           ...base,
           packages: allEntries.map(entry => ({
@@ -240,28 +241,28 @@ export class DashboardPanel {
         });
       }
 
-      // ── Phase 2: outdated check (fast — one npm view per package) ─────────
+      // Phase 2: outdated — only post on first load to avoid flash
       const outdatedMap = await getOutdatedPackages(allEntries);
 
-      post({
-        ...base,
-        packages: allEntries.map(entry => {
-          const installed = entry.version.replace(/^[^\d]+/, '') || entry.version;
-          const outdated = outdatedMap.get(entry.name);
-          return {
-            name: entry.name,
-            version: entry.version,
-            latest: outdated?.latest ?? null,
-            isUnused: !usedPackages.has(entry.name),
-            isDev: entry.isDev,
-            lastUpdated: null,
-            size: null,
-            repoUrl: null,
-            vulnSeverity: null,
-          };
-        }),
-      });
-
+      if (isFirstLoad) {
+        post({
+          ...base,
+          packages: allEntries.map(entry => {
+            const outdated = outdatedMap.get(entry.name);
+            return {
+              name: entry.name,
+              version: entry.version,
+              latest: outdated?.latest ?? null,
+              isUnused: !usedPackages.has(entry.name),
+              isDev: entry.isDev,
+              lastUpdated: null,
+              size: null,
+              repoUrl: null,
+              vulnSeverity: null,
+            };
+          }),
+        });
+      }
       // ── Phase 3: full registry data + audit (slower, background) ──────────
       const [registryMap, vulnMap] = await Promise.all([
         getPackageRegistryDataBatch(allEntries),

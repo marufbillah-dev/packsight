@@ -1778,7 +1778,7 @@ export function getDashboardHtml(
             ? '<input type="checkbox" class="row-check" data-name="' + esc(pkg.name) + '" ' + (selectedPackages.has(pkg.name) ? 'checked' : '') + ' title="Select for bulk update" />'
             : '') + '</td>' +
           '<td class="col-name"><span class="pkg-name-link" data-name="' + esc(pkg.name) + '">' + esc(pkg.name) + '</span>' + vulnIcon + devTag + '</td>' +
-          '<td class="col-version">^' + esc(pkg.version.replace(/^[\^~>=<\s]+/, '')) + '</td>' +
+          '<td class="col-version">' + esc((pkg.version.replace(/^[\^~>=<\s]+/, '') ? '^' + pkg.version.replace(/^[\^~>=<\s]+/, '') : pkg.version)) + '</td>' +
           '<td class="col-latest">' + latestCell + '</td>' +
           '<td class="col-date" data-iso="' + (pkg.lastUpdated ? esc(pkg.lastUpdated) : '') + '"><span class="date-text">' + formatDate(pkg.lastUpdated) + '</span></td>' +
           '<td class="col-size">' + formatSize(pkg.size) + '</td>' +
