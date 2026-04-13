@@ -1802,14 +1802,19 @@ export function getDashboardHtml(
 
     // ── Revert history ─────────────────────────────────────────────────────
     const MAX_HISTORY = 20;
-    let revertHistory = []; // { id, kind, packageName, version, isDev, label, time }
+    let revertHistory = []; // restored from cache on loadData
     let revertIdSeq   = 0;
 
+    function syncHistory() {
+      // Persist history back to the extension so it survives panel close/reopen
+      vscode.postMessage({ command: 'syncRevertHistory', history: revertHistory });
+    }
+
     function addRevertEntry(revertInfo) {
-      if (!revertInfo) { return; }
+      if (!revertInfo || !revertInfo.packageName) { return; }
       const entry = {
         id:          ++revertIdSeq,
-        kind:        revertInfo.kind,        // 'uninstall' | 'update'
+        kind:        revertInfo.kind,
         packageName: revertInfo.packageName,
         version:     revertInfo.version,
         isDev:       revertInfo.isDev,
@@ -1821,6 +1826,7 @@ export function getDashboardHtml(
       revertHistory.unshift(entry);
       if (revertHistory.length > MAX_HISTORY) { revertHistory.pop(); }
       updateRevertBadge();
+      syncHistory();
     }
 
     function updateRevertBadge() {
@@ -1873,6 +1879,7 @@ export function getDashboardHtml(
       revertHistory = [];
       updateRevertBadge();
       renderRevertList();
+      syncHistory();
     });
     document.getElementById('revert-list').addEventListener('click', e => {
       const btn = e.target.closest('.btn-revert-item');
@@ -1884,6 +1891,7 @@ export function getDashboardHtml(
       revertHistory = revertHistory.filter(x => x.id !== id);
       updateRevertBadge();
       renderRevertList();
+      syncHistory();
       closeRevertPanel();
       vscode.postMessage({ command: 'revert', packageName: entry.packageName, version: entry.version, isDev: entry.isDev });
     });
@@ -1922,6 +1930,13 @@ export function getDashboardHtml(
           document.getElementById('badge-node-ver').textContent = nodeVer ? 'v' + nodeVer : '—';
           document.getElementById('badge-npm-ver').textContent  = npmVer  ? 'v' + npmVer  : '—';
           document.getElementById('runtime-badges').style.display = (nodeVer || npmVer) ? 'flex' : 'none';
+          // Restore persisted revert history
+          if (msg.payload.revertHistory && msg.payload.revertHistory.length > 0) {
+            revertHistory = msg.payload.revertHistory;
+            // Ensure idSeq is above all restored ids to avoid collisions
+            revertIdSeq = Math.max(revertIdSeq, ...revertHistory.map(e => e.id));
+            updateRevertBadge();
+          }
           updateStats();
           renderTable();
           setLoading(false);

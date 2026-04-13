@@ -51,9 +51,17 @@ export class DashboardPanel {
         if (!isWebviewMessage(raw)) { return; }
 
         if (raw.command === 'ready') {
-          // Serve cache instantly so the UI renders without a loading screen,
-          // then revalidate in the background.
           void this.loadData(false);
+          return;
+        }
+
+        if (raw.command === 'syncRevertHistory') {
+          if (DashboardPanel.cachedData) {
+            DashboardPanel.cachedData = {
+              ...DashboardPanel.cachedData,
+              revertHistory: raw.history,
+            };
+          }
           return;
         }
 

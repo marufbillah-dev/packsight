@@ -20,6 +20,19 @@ export interface DashboardData {
   nodeVersion: string | null;
   /** npm version, e.g. "10.2.4" */
   npmVersion: string | null;
+  /** Persisted revert history — survives panel close/reopen */
+  revertHistory?: RevertHistoryEntry[];
+}
+
+/** A single entry in the revert history list */
+export interface RevertHistoryEntry {
+  id: number;
+  kind: 'uninstall' | 'update';
+  packageName: string;
+  version: string;
+  isDev: boolean;
+  label: string;
+  time: string;
 }
 
 // ─── Messages: Webview → Extension ───────────────────────────────────────────
@@ -34,7 +47,8 @@ export type WebviewMessage =
   | { command: 'openNpm'; packageName: string }
   | { command: 'searchPackages'; query: string }
   | { command: 'installPackage'; packageName: string; isDev: boolean }
-  | { command: 'revert'; packageName: string; version: string; isDev: boolean };
+  | { command: 'revert'; packageName: string; version: string; isDev: boolean }
+  | { command: 'syncRevertHistory'; history: RevertHistoryEntry[] };
 
 // ─── Messages: Extension → Webview ───────────────────────────────────────────
 
