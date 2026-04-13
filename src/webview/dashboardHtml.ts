@@ -2207,10 +2207,10 @@ export function getDashboardHtml(
       const bulkItems = names.map(n => {
         const pkg = allPackages.find(p => p.name === n);
         const rawVer  = pkg ? pkg.version : '';
-        const cleanVer = rawVer.replace(/^[^\d]+/, '') || rawVer;
+        const cleanVer = rawVer.replace(/^[^\d]+/, '') || rawVer.replace(/^[^.]+/, '') || rawVer;
         return {
           name: n,
-          from: '^' + cleanVer,
+          from: cleanVer,
           to:   pkg ? (pkg.latest ?? '?') : '?',
         };
       });
@@ -2274,8 +2274,8 @@ export function getDashboardHtml(
       // Single-package version upgrade arrow
       const arrow = document.getElementById('confirm-version-arrow');
       if (versionInfo) {
-        document.getElementById('ver-from').textContent = '^' + versionInfo.from;
-        document.getElementById('ver-to').textContent   = '^' + versionInfo.to;
+        document.getElementById('ver-from').textContent = '^' + versionInfo.from.replace(/^[^\d]+/, '');
+        document.getElementById('ver-to').textContent   = '^' + versionInfo.to.replace(/^[^\d]+/, '');
         const bump = bumpType(versionInfo.from, versionInfo.to);
         const bumpEl = document.getElementById('ver-bump');
         bumpEl.textContent = bump ? bump.charAt(0).toUpperCase() + bump.slice(1) : '';
@@ -2295,9 +2295,9 @@ export function getDashboardHtml(
           return '<div class="bulk-list-row">' +
             '<span class="bulk-list-name">' + esc(item.name) + '</span>' +
             '<div class="bulk-list-versions">' +
-              '<span class="ver-chip ver-chip-from">' + esc(item.from) + '</span>' +
+              '<span class="ver-chip ver-chip-from">^' + esc(item.from.replace(/^[^\d]+/, '')) + '</span>' +
               '<span class="ver-arrow">→</span>' +
-              '<span class="ver-chip ver-chip-to">^' + esc(item.to) + '</span>' +
+              '<span class="ver-chip ver-chip-to">^' + esc(item.to.replace(/^[^\d]+/, '')) + '</span>' +
               (bumpLabel ? '<span class="ver-bump-tag' + bumpCls + '">' + bumpLabel + '</span>' : '') +
             '</div>' +
           '</div>';
